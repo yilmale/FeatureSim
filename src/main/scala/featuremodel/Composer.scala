@@ -86,12 +86,12 @@ object FOModel extends FeatureComposer  {
               val featureSet = f1g.featureSet
               val lifter = new Lifter[Feature,Feature] {
                 def lift(x : Feature, y : Feature) = new Feature  {
-                  def Val() : List[Activity] = x.behavior
+                  def Val() : List[Activity] = behavior
                   def eVal() : Unit =  {
                     for (x <- behavior) x.execute()
                   }
-                  override var agent : Agent = null
-                  override var behavior : List[Activity] = x.behavior
+                 var agent : Agent = null
+                 var behavior : List[Activity] = x.behavior
                 }
               }
             }
@@ -102,7 +102,7 @@ object FOModel extends FeatureComposer  {
             val rest = h.subFeatures.tail
             fmp1 = evaluate(List(hd),base)
             for (x <- rest) {
-              fmp2 = evaluate(List(x),base)
+              fmp2 = evaluateGeneric(List(x),base)
               fmp1 = new FeatureMerge[Feature,Feature] {
                 var featureName = fmp1.featureName + fmp2.featureName
                 val alg1 = fmp1
@@ -110,12 +110,12 @@ object FOModel extends FeatureComposer  {
                 val featureSet = fmp1.featureSet ++ fmp2.featureSet
                 val lifter = new Lifter[Feature,Feature] {
                   def lift(x : Feature, y : Feature) = new Feature  {
-                    def Val() : List[Activity] = x.behavior
+                    def Val() : List[Activity] = behavior
                     def eVal() : Unit =  {
                       for (x <- behavior) x.execute()
                     }
-                    override var agent : Agent = null
-                    override var behavior : List[Activity] = x.behavior union y.behavior
+                    var agent : Agent = null
+                    var behavior : List[Activity] = x.behavior union y.behavior
                   }
                 }
               }
@@ -125,17 +125,17 @@ object FOModel extends FeatureComposer  {
           case Or(_,_) =>
             println("Or operator")
             var found : Boolean = false
-            var completed : Boolean = false
             val fList = h.subFeatures.iterator
-            while ((fList.hasNext) && (!completed)) {
+
+            while ((fList.hasNext)) {
               val hd = fList.next()
               if ((resModel(hd.name)==true) && (found==false)) {
-                fmp1 = evaluate(List(hd),base)
+                fmp1 = evaluateGeneric(List(hd),base)
                 found=true
               }
               else
               if ((resModel(hd.name)==true) && (found==true)) {
-                fmp2 = evaluate(List(hd),base)
+                fmp2 = evaluateGeneric(List(hd),base)
                 fmp1 = new FeatureMerge[Feature,Feature] {
                   var featureName = fmp1.featureName + fmp2.featureName
                   val alg1 = fmp1
@@ -143,17 +143,15 @@ object FOModel extends FeatureComposer  {
                   val featureSet = fmp1.featureSet ++ fmp2.featureSet
                   val lifter = new Lifter[Feature,Feature] {
                     def lift(x : Feature, y : Feature) = new Feature  {
-                      def Val() : List[Activity] = x.behavior
+                      def Val() : List[Activity] = behavior
                       def eVal() : Unit =  {
                         for (x <- behavior) x.execute()
                       }
-                      override var agent : Agent = null
-                      override var behavior : List[Activity] = x.behavior union y.behavior
+                      var agent : Agent = null
+                      var behavior : List[Activity] = x.behavior union y.behavior
                     }
                   }
                 }
-
-                completed = true
 
               }
             }
@@ -167,7 +165,7 @@ object FOModel extends FeatureComposer  {
             while ((fList.hasNext) && (found==false)) {
               val hd = fList.next()
               if ((resModel(hd.name)==true) && (found==false)) {
-                fmp1 = evaluate(List(hd),base)
+                fmp1 = evaluateGeneric(List(hd),base)
                 found=true
               }
             }
@@ -178,7 +176,7 @@ object FOModel extends FeatureComposer  {
             println("Optional operator")
             if (resModel(name)==true) {
               val hd = h.subFeatures.head
-              fmp1 = evaluate(List(hd),base)
+              fmp1 = evaluateGeneric(List(hd),base)
             }
             else fmp1 = baseGenerator
             println("Optional operation applied - " + "to create " + fmp1.featureName)

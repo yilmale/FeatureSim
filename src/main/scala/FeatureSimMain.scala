@@ -17,12 +17,14 @@ object FeatureSimMain extends App  {
       var s = (new Space2D(500,500)) createSpace2D()
       setProjection(s)
       model = new Model {
+        object ag extends AgentGenerator
+        val preyGen = FOModel(PreyModel)
         for (j <- 0 until 10) {
           var na : NormativeAgent = new NormativeAgent()
           add(na)
         }
       }
-    } simulate()
+    } //simulate()
   }
 
 
