@@ -8,9 +8,15 @@ import norm.NormativeAgent
 
 import scala.util.Random
 
+import inference._
+
 
 object FeatureSimMain extends App  {
 
+
+  var i = new InferenceTest()
+
+  /*
   new Experiment {
     params = Map("stopTime" -> 20)
     new Context {
@@ -26,7 +32,7 @@ object FeatureSimMain extends App  {
       }
     } //simulate()
   }
-
+*/
 
   /*
     val m : scala.xml.Node = Communication.testComm()
