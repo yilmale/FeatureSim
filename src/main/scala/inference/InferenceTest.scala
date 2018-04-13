@@ -1,12 +1,7 @@
 package inference
 
-case class eats(name: String, fruit: String) extends Clause {
-  def evaluate() : Boolean = true
-}
-
-case class fruit(name: String) extends Clause {
-  def evaluate() : Boolean = true
-}
+case class eats(name: String, fruit: String) extends Clause
+case class fruit(name: String) extends Clause
 
 object MyWorkingMemory extends WorkingMemory {
   var a : Int = 3
@@ -19,9 +14,10 @@ class InferenceTest {
    implicit var wm = MyWorkingMemory
    implicit var rb = new RuleBase(wm)
 
-   var x = belief(eats("levent","apple"))
+   var x=belief(eats("levent","apple"))
+   belief(eats("joe","orange"))
 
-   rule(List(eats("levent","apple")),(fruit("apple")))
+   rule(List(eats("levent","orange")),(fruit("apple")))
 
    println("old value is " + a)
    belief(Assert({a=4},(a==4)))
@@ -35,5 +31,7 @@ class InferenceTest {
    println("belief is " + x.percept)
 
    if (x.percept == y) println("same") else println("different")
+
+   rb.forwardChain()
 
 }
