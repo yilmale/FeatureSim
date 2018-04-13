@@ -5,16 +5,25 @@ abstract class Fact {
 }
 
 abstract class Clause {
-  var wm : WorkingMemory = null
+  var wm : WorkingMemory=null
   var truth : Boolean = false
-  def evaluate() : Boolean
+  def evaluate() : Boolean = {
+    println("Evaluating " + this)
+    var found = false
+
+    var it=wm.beliefs.iterator
+    while ((it.hasNext) && (found==false)) {
+      if (it.next().percept == this) found=true
+    }
+    found
+  }
 }
 
 class Assert(f : => Unit, e: => Boolean) extends Clause {
   f
   truth=true
 
-  def evaluate() : Boolean = e
+  override def evaluate() : Boolean = e
 }
 
 object Assert {
@@ -32,14 +41,17 @@ case class belief(percept: Clause)(implicit wm : WorkingMemory) {
 
 case class rule(antecedent : List[Clause],consequent : Clause)(implicit rb : RuleBase) {
   rb.rules = this :: rb.rules
+  antecedent foreach (a => {a.wm=rb.wm})
+  consequent.wm=rb.wm
 }
 
-class RuleBase(wm: WorkingMemory) {
+class RuleBase(wmi: WorkingMemory) {
+  var wm : WorkingMemory = wmi
   var rules : List[rule] = List()
   var matchList : List[rule] = null
 
   def check(r : rule): Boolean = {
-    println("Testing rule.....")
+    println("Testing rule....." + r)
     var found: Boolean = true
     var it = r.antecedent.iterator
     while ((it.hasNext) && (found==true)) {
@@ -56,6 +68,7 @@ class RuleBase(wm: WorkingMemory) {
         matchList = r :: matchList
       }
       )
+    println("Match list is " + matchList)
     }
 }
 
