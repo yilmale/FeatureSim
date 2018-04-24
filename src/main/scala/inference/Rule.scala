@@ -1,8 +1,6 @@
 package inference
 
-abstract class Fact {
 
-}
 
 abstract class Clause {
   var wm : WorkingMemory=null
@@ -34,7 +32,7 @@ object Assert {
 }
 
 
-case class belief(percept: Clause)(implicit wm : WorkingMemory) {
+case class belief(percept: Clause,truth : Boolean = true)(implicit wm : WorkingMemory) {
   wm.beliefs = this :: wm.beliefs
   percept.wm = wm
 }
