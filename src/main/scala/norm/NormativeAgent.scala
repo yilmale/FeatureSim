@@ -1,11 +1,19 @@
 package norm
 
-import agent.{ActivityGenerator, Agent}
+import agent.{ActivityGenerator, Activity,Agent}
 import simulation.ModelUtility
 
 /**
   * Created by yilmaz on 8/1/17.
   */
+
+object NormativeAgent {
+  def apply(): NormativeAgent = {
+    new NormativeAgent()
+  }
+}
+
+
 class NormativeAgent() extends Agent {
   var s = ModelUtility.spaceView
   agentType = "Normative"

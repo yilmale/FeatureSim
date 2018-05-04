@@ -14,25 +14,25 @@ import inference._
 object FeatureSimMain extends App  {
 
 
-  var i = new InferenceTest()
+  //var i = new InferenceTest()
 
-  /*
+
   new Experiment {
     params = Map("stopTime" -> 20)
     new Context {
-      var s = (new Space2D(500,500)) createSpace2D()
+      var s = (new Space2D(750,750)) createSpace2D()
       setProjection(s)
       model = new Model {
         object ag extends AgentGenerator
         val preyGen = FOModel(PreyModel)
         for (j <- 0 until 10) {
-          var na : NormativeAgent = new NormativeAgent()
+          var na = NormativeAgent()
           add(na)
         }
       }
-    } //simulate()
+    } simulate()
   }
-*/
+
 
   /*
     val m : scala.xml.Node = Communication.testComm()
