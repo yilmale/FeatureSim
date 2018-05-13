@@ -7,16 +7,17 @@ import communication._
 import norm.NormativeAgent
 
 import scala.util.Random
-
 import inference._
+import metasim.MetaTest
 
 
 object FeatureSimMain extends App  {
 
 
+  MetaTest()
   //var i = new InferenceTest()
 
-
+  /*
   new Experiment {
     params = Map("stopTime" -> 20)
     new Context {
@@ -33,7 +34,7 @@ object FeatureSimMain extends App  {
     } simulate()
   }
 
-
+  */
   /*
     val m : scala.xml.Node = Communication.testComm()
     println(m)
