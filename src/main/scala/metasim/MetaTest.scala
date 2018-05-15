@@ -8,6 +8,15 @@ object MetaTest {
     val y = "val x = 2".tokenize.get
     println(y)
 
+
+    val myf = q"def myF() : Unit = {var lv : Int = 0}"
+
+
+    myf match {
+      case q"def $name(...$paramss): $result = { ..$body }" =>
+        println(q"def $name: Unit = { ..$body }")
+    }
+
     val m = q"case class User(name: String, age: Int)"
     println(m.name)
 
@@ -15,15 +24,20 @@ object MetaTest {
 
     val c = source"""sealed trait Op[A]
     object Op extends B {
-      case class Foo(i: Int) extends Op[Int]
+      case class Foo(i: Int) extends Op[Int] {var x : Int = 0}
       case class Bar(s: String) extends Op[String]
-    }""".collect { case cls: Defn.Class => cls.name }
+    }""".collect { case cls: Defn.Class => cls }
 
     println(c)
+
+    println(c.head)
+
+    println(c.head.tparams)
 
     val x1 = q"myList.filter(_ > 3 + a).headOption; myList1.filter(_ > 3 + a).headOption"
 
     println(x1)
+
 
     val x2 = x1.transform {
       case q"$lst.filter($cond).headOption" => q"$lst.find($cond)"
