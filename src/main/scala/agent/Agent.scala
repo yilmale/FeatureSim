@@ -82,6 +82,7 @@ trait Component {
   def delete() : Unit
 }
 
+
 class Agent extends Component {
   var agentId : Double =_
   var agentType : String = _

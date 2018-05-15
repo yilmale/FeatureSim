@@ -32,7 +32,6 @@ abstract class DTSim {
   def schedule(delay: Int, ew : EventWrapper) = {
     val newEvent = SimEvent(currentTime + delay, ew.event, ew.target)
     eventList = insert(eventList,newEvent)
-    println("scheduled new action")
 
   }
 
