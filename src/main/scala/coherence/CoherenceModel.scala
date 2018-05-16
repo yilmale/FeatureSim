@@ -3,40 +3,64 @@ package coherence
 
 object CoMod {
   var coModel : CoherenceModel = null
-  def explain(): Constraint = {
-    new Constraint {
 
+  def explain(target: String, exp: String, w: Double): Constraint = {
+    val e = new Explanation {
+      explanandum = coModel.P(target)
+      explanan = coModel.P(exp)
+      weight = w
     }
+
+    coModel.CG(coModel.P(target)) = e :: coModel.CG(coModel.P(target))
+    coModel.CG(coModel.P(exp)) = e :: coModel.CG(coModel.P(exp))
+    e
   }
 
-  def proposition() : Unit = {
-    var p = new Proposition()
-    coModel.propositions = p :: coModel.propositions
-    println("Inserted new proposition " + coModel.propositions)
+  def data(ident: String, expl: String, confidence: Double): Unit = {
+    coModel.P += (ident -> new Belief() {
+      id = ident
+      explanation = expl
+      activation = confidence
+    })
+    coModel.CG += (coModel.P(ident) -> List[Constraint]())
   }
+
+  def belief(ident: String, expl: String, act: Double): Unit = {
+    coModel.P += (ident -> new Belief() {
+      id = ident
+      explanation = expl
+      activation = act
+    })
+    coModel.CG += (coModel.P(ident) -> List[Constraint]())
+  }
+
+  def goal(ident: String, expl: String, act: Double): Unit = {
+    coModel.P += (ident -> new Goal() {
+      id = ident
+      explanation = expl
+      activation = act
+    })
+    coModel.CG += (coModel.P(ident) -> List[Constraint]())
+  }
+
 }
 
 
 class CoherenceModel { self =>
-  var propositions : List[Proposition] = List()
-  var constraints : List[Constraint] = List()
+  var P : scala.collection.mutable.Map[String,Proposition] = scala.collection.mutable.Map()
+  var C : List[Constraint] = List()
+  var CG : scala.collection.mutable.Map[Proposition,List[Constraint]] = scala.collection.mutable.Map()
   CoMod.coModel = this
 
   def subjectTo(c: Constraint*) : CoherenceModel = {
     new CoherenceModel {
-      propositions = self.propositions
-      constraints = self.constraints ++ c
+      P = self.P
+      C = self.C ++ c
+      CG = self.CG
     }
   }
 
 
 }
 
-class Proposition {
-
-}
-
-class Constraint {
-
-}
 
