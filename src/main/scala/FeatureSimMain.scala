@@ -13,7 +13,6 @@ import metasim.MetaTest
 
 object FeatureSimMain extends App  {
 
-
   MetaTest()
   //var i = new InferenceTest()
 
