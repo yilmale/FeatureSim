@@ -15,21 +15,21 @@ import coherence.CoMod._
 object FeatureSimMain extends App {
 
 
-  val cm = ( new CoherenceModel() {
-        data("B0", "evidence1", 0.7)
-        belief("B1", "belief1",0.5)
-        belief("B2", "belief2", 0.6)
-        belief("B3", "belief3", 0.2)
-      }
-      subjectTo (
-        explain("B0", "B1", 0.8),
-        explain("B1", "B2", 0.5),
-        explain("B2", "B3", 0.5))
-    )
+  val cm = CoherenceModel {
+    data(("B0", "evidence1", 0.7))
+    belief("B1", "belief1",0.5)
+    belief("B2", "belief2", 0.6)
+    belief("B3", "belief3", 0.2)
+  } subjectTo (
+    explain( List("B1","B2"), "B0", 0.1),
+    explain("B1", "B3", 0.1),
+    contradict("B2", "B3", 0.1)
+  )
 
-  println(cm.P)
-  println(cm.C)
-  println(cm.CG)
+  println(cm)
+
+
+
 
 
   //MetaTest()
