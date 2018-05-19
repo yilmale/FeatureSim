@@ -9,11 +9,32 @@ import norm.NormativeAgent
 import scala.util.Random
 import inference._
 import metasim.MetaTest
+import coherence._
+import coherence.CoMod._
 
 
-object FeatureSimMain extends App  {
+object FeatureSimMain extends App {
 
-  MetaTest()
+
+  val cm = ( new CoherenceModel() {
+        proposition()
+        proposition()
+      }
+      subjectTo (
+           explain(),
+           explain(),
+           explain()
+      )
+      subjectTo (
+
+      )
+    )
+
+  println(cm.propositions)
+  println(cm.constraints)
+
+
+  //MetaTest()
   //var i = new InferenceTest()
 
   /*
