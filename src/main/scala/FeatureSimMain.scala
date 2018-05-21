@@ -16,17 +16,27 @@ object FeatureSimMain extends App {
 
 
   val cm = CoherenceModel {
-    data(("B0", "evidence1", 0.7))
-    belief("B1", "belief1",0.5)
-    belief("B2", "belief2", 0.6)
-    belief("B3", "belief3", 0.2)
+        data(("B0", "evidence1", 0.9))
+        belief("B1", "belief1",0.9)
+        belief("B2", "belief2", 0.9)
+        belief("B3", "belief3", 0.01)
+        goal("G1", "goal1")
+        goal("G2", "goal2")
   } subjectTo (
-    explain( List("B1","B2"), "B0", 0.1),
-    explain("B1", "B3", 0.1),
-    contradict("B2", "B3", 0.1)
+        explain( List("B1","B2"), "B0", 0.8),
+        explain("B3", "B1", 0.1),
+        contradict("B2", "B3", 0.1)
+  ) subjectTo (
+        deduce("B3", "G1"),
+        deduce("B2", "G2"),
+        incompatible("G1", "G2")
   )
 
+  cm.evaluate()
   println(cm)
+
+
+
 
 
 
