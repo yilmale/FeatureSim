@@ -23,7 +23,7 @@ object CoMod {
     val e = new Explanation {
       explanandum = coModel.P(target)
       explanan = coModel.P(exp)
-      weight = -w
+      weight = w
     }
     coModel.CG(coModel.P(target)) = e :: coModel.CG(coModel.P(target))
     coModel.CG(coModel.P(exp)) = e :: coModel.CG(coModel.P(exp))
@@ -34,7 +34,7 @@ object CoMod {
     val e = new Deduction {
       consequence = coModel.P(target)
       premise = coModel.P(exp)
-      weight = -w
+      weight = w
     }
     coModel.CG(coModel.P(target)) = e :: coModel.CG(coModel.P(target))
     coModel.CG(coModel.P(exp)) = e :: coModel.CG(coModel.P(exp))
@@ -45,7 +45,7 @@ object CoMod {
     val e = new Facilitation {
       goal = coModel.P(act2)
       action = coModel.P(act1)
-      weight = -w
+      weight = w
     }
     coModel.CG(coModel.P(act1)) = e :: coModel.CG(coModel.P(act1))
     coModel.CG(coModel.P(act2)) = e :: coModel.CG(coModel.P(act2))
