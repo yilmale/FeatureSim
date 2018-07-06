@@ -12,7 +12,7 @@ object Collaboration {
 
 
 
-package a {
+package featurea {
 
   abstract class Graph {
     def print(): Unit = {
@@ -32,7 +32,7 @@ package a {
 
 }
 
-package b {
+package featureb {
 
   import Collaboration._
 
@@ -44,7 +44,7 @@ package b {
     }
 
     refines {
-      class Edge(n: a.Node) {
+      class Edge(n: featurea.Node) {
 
       }
     }

@@ -15,6 +15,8 @@ import coherence.CoMod._
 object FeatureSimMain extends App {
 
 
+
+ /*
   val cm = CoherenceModel {
         data(("B0", "evidence1", 1.0))
         belief("B1", "belief1")
@@ -35,13 +37,12 @@ object FeatureSimMain extends App {
   println(cm)
 
 
+*/
 
 
 
+  MetaTest()
 
-
-
-  //MetaTest()
   //var i = new InferenceTest()
 
   /*
