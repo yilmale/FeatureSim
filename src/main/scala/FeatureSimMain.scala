@@ -23,7 +23,7 @@ object FeatureSimMain extends App {
         goal("G1", "goal1")
         goal("G2", "goal2")
   } subjectTo (
-        explain( List("B1","B2"), "B0", 0.8),
+        explain( List("B1","B2"), "B0",0.2),
         contradict("B2", "B3")
     ) subjectTo (
         deduce("B3", "G1"),
