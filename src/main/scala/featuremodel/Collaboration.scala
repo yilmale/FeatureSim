@@ -12,7 +12,7 @@ object Collaboration {
 
 
 
-package featurea {
+object featurea {
 
   abstract class Graph {
     def print(): Unit = {
@@ -32,11 +32,11 @@ package featurea {
 
 }
 
-package featureb {
+object featureb {
 
   import Collaboration._
 
-  object feature {
+
     refines {
       class Graph {
 
@@ -56,7 +56,6 @@ package featureb {
     trait Weight {
 
     }
-  }
 
 }
 

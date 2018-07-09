@@ -5,6 +5,59 @@ import scala.meta._
 object MetaTest {
   def apply(): Unit = {
 
+    val f =  source"""object featurea {
+
+  abstract class Graph {
+    def print(): Unit = {
+      var x = 5
+    }
+  }
+
+
+  abstract class Node {
+
+  }
+
+
+  abstract class Edge {
+
+  }
+
+}
+
+object featureb {
+
+  import Collaboration._
+
+
+    refines {
+      class Graph {
+
+      }
+    }
+
+    refines {
+      class Edge(n: featurea.Node) {
+
+      }
+    }
+
+    refines {
+      class Node
+    }
+
+    trait Weight {
+
+    }
+
+}""".collect { case cls: Defn.Object  => cls }
+
+
+    println(f(1).children(1).children(2).children)
+    println("-------------------")
+
+
+
     val y = "val x = 2".tokenize.get
     println(y)
 
