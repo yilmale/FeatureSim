@@ -52,9 +52,26 @@ object featureb {
 
 }""".collect { case cls: Defn.Object  => cls }
 
+    var progStr : String = ""
+    f foreach (x => {
 
-    println(f(1).children(1).children(2).children)
-    println("-------------------")
+      println("Feature")
+      println(x.structure)
+      println(x.name)
+
+      x.templ.stats foreach  ( y=>
+        {
+          println(y)
+        }
+      )
+
+      //println(x.children(1).collect {case cls: Defn.Class => cls})
+      println("-------------------")
+      //progStr += s"\n$x"
+    })
+
+    //println(progStr)
+
 
 
 
