@@ -1,5 +1,7 @@
 package featuremodel
 
+import Collaboration._
+
 object Collaboration {
   def feature(name: String)(body: => Unit): Unit = {
     body
@@ -33,9 +35,6 @@ object featurea {
 }
 
 object featureb {
-
-  import Collaboration._
-
 
     refines {
       class Graph {

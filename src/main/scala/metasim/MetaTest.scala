@@ -5,31 +5,32 @@ import scala.meta._
 object MetaTest {
   def apply(): Unit = {
 
-    val f =  source"""object featurea {
+    val f =  source"""  import Collaboration._
+  object featurea {
+   abstract class Graph {
+    var a1 : Int = 0
+    var a2 : Int = 1
 
-  abstract class Graph {
-    def print(): Unit = {
+    def myPrint() : Int = {
       var x = 5
+      x
     }
-  }
 
+    def test1() : Int = {
+       var y = 10
+    }
+   }
+   abstract class Node {
 
-  abstract class Node {
+   }
 
-  }
+   abstract class Edge {
 
+   }
 
-  abstract class Edge {
+ }
 
-  }
-
-}
-
-object featureb {
-
-  import Collaboration._
-
-
+  object featureb {
     refines {
       class Graph {
 
@@ -50,25 +51,41 @@ object featureb {
 
     }
 
-}""".collect { case cls: Defn.Object  => cls }
+}"""
+
+
+    var clss = f.collect { case cls: Defn.Object  => cls }
 
     var progStr : String = ""
-    f foreach (x => {
+
+    clss foreach (x => {
 
       println("Feature")
       println(x.structure)
       println(x.name)
-
+      var newf : Tree = null
       x.templ.stats foreach  ( y=>
         {
-          println(y)
-        }
+          println(y.children)
+          if (y.children.length > 3) {
+            var it = y.children(3).children.iterator
+            while (it.hasNext) {
+              var n = it.next()
+              if (n.isInstanceOf[Defn.Def]) {
+
+              }
+            }
+          }
+
+          })
+       }
       )
 
-      //println(x.children(1).collect {case cls: Defn.Class => cls})
       println("-------------------")
+
+    println(f)
       //progStr += s"\n$x"
-    })
+
 
     //println(progStr)
 
