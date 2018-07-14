@@ -21,7 +21,9 @@ object MetaTest {
     }
    }
    abstract class Node {
-
+     def test2() : Int = {
+      var y = 10
+     }
    }
 
    abstract class Edge {
@@ -56,34 +58,43 @@ object MetaTest {
 
     var clss = f.collect { case cls: Defn.Object  => cls }
 
-    var progStr : String = ""
+    var progStr : Tree = null
 
-    clss foreach (x => {
-
-      println("Feature")
+    clss foreach { x =>
       println(x.structure)
       println(x.name)
-      var newf : Tree = null
-      x.templ.stats foreach  ( y=>
+      x.templ.stats foreach { y =>
         {
-          println(y.children)
           if (y.children.length > 3) {
-            var it = y.children(3).children.iterator
-            while (it.hasNext) {
-              var n = it.next()
-              if (n.isInstanceOf[Defn.Def]) {
+            y.children(3).children foreach { z =>
+              {
+                if (z.isInstanceOf[Defn.Def])  {
+                  println("function name is " + z.asInstanceOf[Defn.Def].name)
+                  var method = z.transform {
+                    case q"def test1() : Int = {$body}" =>
+                      q"def test3() : Int = {$body}"
+                    case q"def test2() : Int = {$body}" =>
+                      q"def test4() : Int = {$body}"
+                  }
+                  println("new method is " + method)
 
+                }
               }
             }
           }
+        }
 
-          })
-       }
-      )
+      }
+
+    }
+
+
+
 
       println("-------------------")
 
-    println(f)
+    println(clss)
+    println(progStr)
       //progStr += s"\n$x"
 
 
