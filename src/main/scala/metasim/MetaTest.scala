@@ -57,6 +57,10 @@ object MetaTest {
 
 
     var clss = f.collect { case cls: Defn.Object  => cls }
+    var fts0 = clss(0).collect {case cls: Defn.Class => cls.name}
+    var fts1 = clss(1).collect {case cls: Defn.Class => cls.name}
+    println("The classes in " + clss(0).name + " is " + fts0)
+    println("The classes in " + clss(1).name + " is " + fts1)
 
     var progStr : Tree = null
 
