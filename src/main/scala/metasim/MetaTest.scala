@@ -62,6 +62,10 @@ object MetaTest {
     var fts0 = clss(0).collect {case cls: Defn.Class => cls}
     var fts1 = clss(1).collect {case cls: Defn.Class => cls}
 
+    var q"abstract class $className {..$stats}" = fts0(0)
+    println("Matched the following statements " + "class: " + className +
+      " Statements: " + stats)
+
     var joint = (for (cl <- fts0) yield cl.name.toString()) intersect
       (for (cl <- fts1) yield cl.name.toString())
     println("Joint classes are " + joint)
@@ -70,22 +74,25 @@ object MetaTest {
     fts0 foreach {c =>
     {
       var cName = c.name
-      fts1 foreach {r =>
+      if (joint exists (x => x == cName.toString()))
         {
+          fts1 foreach { r => {
           var rName = r.name
-          if (cName.toString()==rName.toString()) {
+          if (cName.toString() == rName.toString()) {
             println(feature1.toString + "." + cName.toString + " matches" +
-              feature2.toString + "." + rName.toString )
+              feature2.toString + "." + rName.toString)
           }
         }
+        }
       }
-
-      var cstats = c.templ.stats
-      classList1 =
-        q"""class $cName
+      else {
+        var cstats = c.templ.stats
+        classList1 =
+          q"""class $cName
            {
              ..$cstats
            }""" :: classList1
+      }
     }
     }
 
