@@ -2,6 +2,7 @@ package metasim
 
 import scala.meta._
 
+
 object MetaTest {
   def apply(): Unit = {
 
@@ -65,6 +66,8 @@ object MetaTest {
     var q"abstract class $className {..$stats}" = fts0(0)
     println("Matched the following statements " + "class: " + className +
       " Statements: " + stats)
+
+
 
     var joint = (for (cl <- fts0) yield cl.name.toString()) intersect
       (for (cl <- fts1) yield cl.name.toString())
