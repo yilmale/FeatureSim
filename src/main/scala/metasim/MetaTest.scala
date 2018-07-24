@@ -28,7 +28,39 @@ object MetaTest {
   var classList : Set[Defn.Class] = Set()
   val pattern = "([A-Za-z0-9]*)_([A-Za-z0-9]+)".r
 
-  def initializeBase(classes: List[Defn.Class], featureName: Term.Name): Unit = {
+
+  def initialize(objs : List[Defn.Object]): Unit = {
+    objs foreach {o => {
+      if (o.name.toString() == "base") {
+        var cls = o collect {case cl : Defn.Class => cl}
+        cls foreach { cl => {
+          classDefined += (cl -> true)
+          var cName = Type.Name(cl.name.toString)
+          var basecName = Type.Name("Base_" + cl.name.toString())
+          var baseType = Init(basecName,Name(""),Nil)
+          var cStats = cl.templ.stats
+          classList = (classList +
+            q"""abstract class $basecName {
+                var Super : $basecName
+            }
+             """) +
+            q"""class $cName extends $baseType {
+                 var Super = null
+                 ..$cStats
+                }
+                """
+          }
+        }
+      }
+      else {
+        var cls = o collect {case cl : Defn.Class => cl}
+        initializeFeature(cls,o.name)
+      }
+    }}
+  }
+
+
+  def initializeFeature(classes: List[Defn.Class], featureName: Term.Name): Unit = {
     classes foreach { cl =>
     {
 
@@ -38,11 +70,24 @@ object MetaTest {
         var basecName = Type.Name("Base_" + cl.name.toString())
         var baseType = Init(basecName,Name(""),Nil)
         var cStats = cl.templ.stats
+
         classList = (classList +
           q"""abstract class $basecName {
                 var Super : $basecName
             }
              """) +
+          q"""class $cName extends $baseType {
+                 var Super = null
+                 ..$cStats
+                }
+                """
+      }
+      else {
+        var cName = Type.Name(featureName+"_"+cl.name.toString)
+        var basecName = Type.Name("Base_" + cl.name.toString())
+        var baseType = Init(basecName,Name(""),Nil)
+        var cStats = cl.templ.stats
+        classList = classList  +
           q"""class $cName extends $baseType {
                  var Super = null
                  ..$cStats
@@ -61,8 +106,6 @@ object MetaTest {
     var fts0 = base.collect {case cls: Defn.Class => cls}
     var fts1 = lifter.collect {case cls: Defn.Class => cls}
 
-    initializeBase(fts0,base.name)
-    initializeBase(fts1,lifter.name)
 
     val pattern(prefix,className) = "Feature1Feature2_Graph"
 
@@ -70,16 +113,17 @@ object MetaTest {
     println(className)
 
     fts1 foreach { cl => {
-      val pattern(prefix,clName) = cl.name.toString()
-      fts0 foreach {liftCl => {
-          val pattern(liftprefix,liftName) = liftCl.name.toString()
-          if (clName == liftName) {
-            lift(liftCl,cl)
-          }
-         }
-       }
+      println(cl.name.toString())
+      //val pattern(prefix,clName) = cl.name.toString()
+      /*fts0 foreach {liftCl => {
+        val pattern(liftprefix,liftName) = liftCl.name.toString()
+        if (clName == liftName) {
+          lift(liftCl,cl)
+        }
       }
-     }
+      }*/
+    }
+    }
 
 
 
@@ -185,7 +229,7 @@ object MetaTest {
   def apply(): Unit = {
 
     val f =  source"""  import Collaboration._
-  object featurea {
+  object base {
    abstract class Graph {
     var a1 : Int = 0
     var a2 : Int = 1
@@ -239,12 +283,16 @@ object MetaTest {
 }"""
 
 
-    var clss = f.collect { case cls: Defn.Object  => cls }
-    var cf = featureMerge1(clss(0),clss(1))
-    println(cf)
+    var objs = f.collect { case cls: Defn.Object  => cls }
+    initialize(objs)
+    //var cf = featureMerge1(objs(0),objs(1))
+    println(classList)
 
 
   }
+
+
+
 
   def testMeta(): Unit = {
     val f =  source"""  import Collaboration._
