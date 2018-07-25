@@ -7,7 +7,7 @@ import communication._
 import norm.NormativeAgent
 
 import scala.util.Random
-import metasim.MetaTest
+import metasim._
 import coherence._
 import coherence.CoMod._
 
@@ -40,7 +40,7 @@ object FeatureSimMain extends App {
 */
 
 
-
+  FeatureSpec()
   MetaTest()
 
   //var i = new InferenceTest()
