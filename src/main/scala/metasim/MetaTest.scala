@@ -20,6 +20,26 @@ class CompositeGraph(g: Graph) extends Graph {
   }
 }
 
+abstract class FeatureExpression
+case class Node(name: String, nodeType: String) extends FeatureExpression
+case class And(name:String, children: List[FeatureExpression]) extends FeatureExpression
+case class Or(name:String, children: List[FeatureExpression]) extends FeatureExpression
+case class Feature(name: String) extends FeatureExpression
+case class FeatureTree(node: FeatureExpression) extends FeatureExpression
+
+object FeatureSpec {
+  def apply(): Unit = {
+    val n = FeatureTree(And("F",List(Feature("F1"),Feature("F2"))))
+    evaluate(n)
+  }
+
+  def evaluate(x: FeatureTree): Unit = {
+   //x.node match {
+   //   case
+    //}
+  }
+}
+
 
 object MetaTest {
 
