@@ -38,8 +38,13 @@ object FeatureSpec {
          Feature("F3"),
          Xor("F4",List(Feature("F41"),Feature("F42")))
     )))
-    var rm = scala.collection.mutable.Map[String,Boolean]("F11"->true,"F12"->false, "F2"-> false, "F42"-> true)
-    val c  = evaluate(n,rm)
+    var rmodel = scala.collection.mutable.Map[String,Boolean](
+      "F11"->true,
+      "F12"->false,
+      "F2"-> false,
+      "F42"-> true
+    )
+    val c  = evaluate(n,rmodel)
     println(c)
   }
 
