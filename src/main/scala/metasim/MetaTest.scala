@@ -3,21 +3,25 @@ package metasim
 import scala.meta._
 
 abstract class Graph {
-  var Super: Graph
+  val Super: Graph
 }
 
 class BaseGraph extends Graph {
   var x : Int = 0
-  var Super: Graph = null
+  val Super: Graph = null
+  def G() {}
 }
 
-class CompositeGraph(g: Graph) extends Graph {
+class CompositeGraph extends Graph {
   var y : Int = 5
-  var Super = g
+  val Super = new BaseGraph {}
+  def CG()= {Super.G()}
+}
 
-  def lift(g: Graph): Unit = {
-    Super = g
-  }
+class Composite2Graph extends Graph {
+  var y : Int = 5
+  val Super = new CompositeGraph {}
+  def C2G() = {Super.CG()}
 }
 
 abstract class FeatureExpression {var fname: String}
@@ -110,6 +114,45 @@ object MetaTest {
   var classList : Set[Defn.Class] = Set()
   val pattern = "([A-Za-z0-9]*)_([A-Za-z0-9]+)".r
 
+  def lift(lifter: Defn.Object, base: Defn.Object): Defn.Object = {
+    def liftClass(s : Defn.Class, t: Defn.Class): Defn.Class = {
+      var composite: Defn.Class = null
+      composite
+    }
+
+    var composite: Defn.Object = null
+    var lifterCls = lifter collect {case cl: Defn.Class => cl}
+    var baseCls = base collect {case cl: Defn.Class => cl}
+
+    var joint = scala.collection.mutable.Map[String,(Defn.Class,Defn.Class)]()
+    lifterCls foreach {cl => {
+        var clName = cl.name.toString()
+        var found = false
+        var c = baseCls find (x => x.name.toString()==clName)
+        var foundClass : Defn.Class =null
+        c match {
+          case Some(c) => {found=true; foundClass=c}
+          case None => found = false
+        }
+        if (found) {
+          joint = joint + (clName -> (cl,foundClass))
+        }
+      }
+      var refinedCls = List[Defn.Class]()
+      joint foreach { m =>
+        {
+          var lfter = m._2._1
+          var base = m._2._2
+          refinedCls = liftClass(lfter,base) :: refinedCls
+        }
+
+      }
+    }
+
+
+    composite
+  }
+
   def initialize(objs: List[Defn.Object]): Unit = {
     objs foreach {o => {
         var cls = o collect {case cl: Defn.Class => cl}
@@ -154,9 +197,7 @@ object MetaTest {
     }
   }
 
-  def lift(s : Defn.Class, t: Defn.Class): Unit = {
 
-  }
 
   def featureMerge(base: Defn.Object, lifter: Defn.Object): Defn.Object = {
     var fts0 = base.collect {case cls: Defn.Class => cls}
@@ -173,7 +214,7 @@ object MetaTest {
       fts0 foreach {liftCl => {
           val pattern(liftprefix,liftName) = liftCl.name.toString()
           if (clName == liftName) {
-            lift(liftCl,cl)
+            //lift(liftCl,cl)
           }
          }
        }
