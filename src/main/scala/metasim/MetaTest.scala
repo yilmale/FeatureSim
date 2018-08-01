@@ -117,8 +117,34 @@ object MetaTest {
   def lift(lifter: Defn.Object, base: Defn.Object): Defn.Object = {
     def liftClass(s : Defn.Class, t: Defn.Class): Defn.Class = {
       var composite: Defn.Class = null
-      composite
-    }
+
+      var valList = (s.templ.stats collect { case v: Defn.Val => v.pats }).flatten
+      var varList = (s.templ.stats collect { case v: Defn.Var => v.pats }).flatten
+      var metList = s.templ.stats collect { case v: Defn.Def => v.name }
+
+      t.templ.stats foreach { x => {
+        x match {
+          case m: Defn.Val => {
+            m.pats foreach { n =>
+              if (!(valList exists (p => (p.toString() == n.toString())))) {
+
+                println("val defn " + m.decltpe + " " + m.pats)
+              }
+            }}
+            case m: Defn.Var => {
+              println("var defn " + m.decltpe + " " + m.pats)
+            }
+            case m: Defn.Def => {
+              println("def defn " + m.decltpe + " " + m.name)
+            }
+            case _ => println("something else")
+          }
+        }
+      }
+
+        composite
+      }
+
 
     var composite: Defn.Object = null
     var lifterCls = lifter collect {case cl: Defn.Class => cl}
@@ -292,6 +318,19 @@ object MetaTest {
     initialize(clss)
     //var cf = featureMerge1(clss(0),clss(1))
     println(classList)
+
+    classList foreach {cl => {
+      println("Analyzing " + cl.name.toString())
+      println("-------------")
+      cl.templ.stats foreach { x => {
+        x match {
+          case m: Defn.Val => {println("val defn " + m.decltpe + " " + m.pats)}
+          case m: Defn.Var => {println("var defn " + m.decltpe + " " + m.pats)}
+          case m: Defn.Def => {println("def defn " + m.decltpe + " " + m.name)}
+          case _ => println("something else")
+        }
+      }}
+    }}
 
 
   }
