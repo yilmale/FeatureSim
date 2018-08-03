@@ -112,7 +112,6 @@ object MetaTest {
   var classDefined : scala.collection.mutable.Map[Defn.Class,Boolean] =
     scala.collection.mutable.Map()
   var featureMapper = scala.collection.mutable.Map[String,List[Defn.Class]]()
-  var classList : Set[Defn.Class] = Set()
   val pattern = "([A-Za-z0-9]*)_([A-Za-z0-9]+)".r
 
   def lift(lifter: Defn.Object, base: Defn.Object): Defn.Object = {
@@ -163,6 +162,18 @@ object MetaTest {
         }
       }
         constructed = s.templ.stats ::: constructed
+        val pattern(prefix,clName) = s.name.toString()
+        var cName = Type.Name(lifter.name.toString()+base.name.toString()+"_"+clName)
+        var basecName = Type.Name("Base_" + clName)
+        var baseType = Init(basecName,Name(""),Nil)
+        val decorated = Init(Type.Name(base.name.toString()+"_"+clName),Name(""),Nil)
+
+        composite = q"""
+                class $cName extends $baseType {
+                 var Super = new $decorated {}
+                 ..$constructed
+                }
+                """
 
         composite
       }
@@ -272,10 +283,8 @@ object MetaTest {
       }
      }
 
-
-
-    var stmts : List[Defn.Class] = classList.toList
-    var composite : Defn.Object = q"object CM {..$stmts}"
+    //var stmts : List[Defn.Class] = classList.toList
+    var composite : Defn.Object = null //q"object CM {..$stmts}"
     composite
 
   }
@@ -364,7 +373,11 @@ object MetaTest {
 
     }
 
-
+    lift(
+      q"""
+         object CM {}
+       """,
+      q"""object CM1 {} """)
 
 
 
