@@ -3,21 +3,25 @@ package metasim
 import scala.meta._
 
 abstract class Graph {
-  var Super: Graph
+  val Super: Graph
 }
 
 class BaseGraph extends Graph {
   var x : Int = 0
-  var Super: Graph = null
+  val Super: Graph = null
+  def G() {}
 }
 
-class CompositeGraph(g: Graph) extends Graph {
+class CompositeGraph extends Graph {
   var y : Int = 5
-  var Super = g
+  val Super = new BaseGraph {}
+  def CG()= {Super.G()}
+}
 
-  def lift(g: Graph): Unit = {
-    Super = g
-  }
+class Composite2Graph extends Graph {
+  var y : Int = 5
+  val Super = new CompositeGraph {}
+  def C2G() = {Super.CG()}
 }
 
 abstract class FeatureExpression {var fname: String}
@@ -38,8 +42,13 @@ object FeatureSpec {
          Feature("F3"),
          Xor("F4",List(Feature("F41"),Feature("F42")))
     )))
-    var rm = scala.collection.mutable.Map[String,Boolean]("F11"->true,"F12"->false, "F2"-> false, "F42"-> true)
-    val c  = evaluate(n,rm)
+    var rmodel = scala.collection.mutable.Map[String,Boolean](
+      "F11"->true,
+      "F12"->false,
+      "F2"-> false,
+      "F42"-> true
+    )
+    val c  = evaluate(n,rmodel)
     println(c)
   }
 
@@ -102,11 +111,111 @@ object MetaTest {
 
   var classDefined : scala.collection.mutable.Map[Defn.Class,Boolean] =
     scala.collection.mutable.Map()
-  var classList : Set[Defn.Class] = Set()
+  var featureMapper = scala.collection.mutable.Map[String,List[Defn.Class]]()
   val pattern = "([A-Za-z0-9]*)_([A-Za-z0-9]+)".r
 
+  def lift(lifter: Defn.Object, base: Defn.Object): Defn.Object = {
+    def liftClass(s : Defn.Class, t: Defn.Class): Defn.Class = {
+      var composite: Defn.Class = null
+      var valList = (s.templ.stats collect { case v: Defn.Val => v.pats }).flatten
+      var varList = (s.templ.stats collect { case v: Defn.Var => v.pats }).flatten
+      var metList = s.templ.stats collect { case v: Defn.Def => v.name }
+      var constructed = List[Stat]()
+      t.templ.stats foreach { x => {
+        x match {
+          case m: Defn.Val => {
+            m.pats foreach { n =>
+              if (!(valList exists (p => (p.toString() == n.toString())))) {
+                var pat = p"$n"
+                var valType= m.decltpe getOrElse(null)
+                var newStmt: Defn.Val = null
+                var expr=m.rhs
+                if (valType != null)
+                   newStmt = q"val $pat : $valType=$expr"
+                else
+                  newStmt = q"val $pat = $expr"
+                constructed = newStmt :: constructed
+              }
+            }}
+            case m: Defn.Var => {
+              m.pats foreach { n =>
+                if (!(varList exists (p => p.toString() == n.toString()))) {
+                  var pat = p"$n"
+                  var varType= m.decltpe getOrElse(null)
+                  var newStmt: Defn.Var = null
+                  var expr=m.rhs getOrElse(null)
+                  if (varType != null)
+                    newStmt = q"var $pat : $varType=$expr"
+                  else
+                    newStmt = q"var $pat = $expr"
+                  constructed = newStmt :: constructed
+                }
+              }
+            }
+            case m: Defn.Def => {
+              println("def defn " + m.decltpe + " " + m.name)
+              if (!(metList exists (p => p.toString() == m.name.toString())))
+                constructed = m :: constructed
+            }
+            case _ => println("something else")
+          }
+        }
+      }
+        constructed = s.templ.stats ::: constructed
+        val pattern(prefix,clName) = s.name.toString()
+        var cName = Type.Name(lifter.name.toString()+base.name.toString()+"_"+clName)
+        var basecName = Type.Name("Base_" + clName)
+        var baseType = Init(basecName,Name(""),Nil)
+        val decorated = Init(Type.Name(base.name.toString()+"_"+clName),Name(""),Nil)
+
+        composite = q"""
+                class $cName extends $baseType {
+                 var Super = new $decorated {}
+                 ..$constructed
+                }
+                """
+
+        composite
+      }
+
+
+    var composite: Defn.Object = null
+    var lifterCls = lifter collect {case cl: Defn.Class => cl}
+    var baseCls = base collect {case cl: Defn.Class => cl}
+
+    var joint = scala.collection.mutable.Map[String,(Defn.Class,Defn.Class)]()
+    lifterCls foreach {cl => {
+        var clName = cl.name.toString()
+        var found = false
+        var c = baseCls find (x => x.name.toString()==clName)
+        var foundClass : Defn.Class =null
+        c match {
+          case Some(c) => {found=true; foundClass=c}
+          case None => found = false
+        }
+        if (found) {
+          joint = joint + (clName -> (cl,foundClass))
+        }
+      }
+      var refinedCls = List[Defn.Class]()
+      joint foreach { m =>
+        {
+          var lfter = m._2._1
+          var base = m._2._2
+          refinedCls = liftClass(lfter,base) :: refinedCls
+        }
+
+      }
+    }
+
+
+    composite
+  }
+
   def initialize(objs: List[Defn.Object]): Unit = {
+    featureMapper += ("AbstractBase" -> List[Defn.Class]())
     objs foreach {o => {
+        featureMapper += (o.name.toString() -> List[Defn.Class]())
         var cls = o collect {case cl: Defn.Class => cl}
         initializeFeature(cls,o.name)
       }
@@ -122,36 +231,35 @@ object MetaTest {
         var basecName = Type.Name("Base_" + cl.name.toString())
         var baseType = Init(basecName,Name(""),Nil)
         var cStats = cl.templ.stats
-        classList = (classList +
+        featureMapper("AbstractBase") =
           q"""abstract class $basecName {
                 var Super : $basecName
             }
-             """) +
+             """ :: featureMapper("AbstractBase")
+        featureMapper(featureName.toString()) =
           q"""class $cName extends $baseType {
                  var Super = null
                  ..$cStats
                 }
-                """
+                """ :: featureMapper(featureName.toString())
       }
       else {
         var cName = Type.Name(featureName+"_"+cl.name.toString)
         var basecName = Type.Name("Base_" + cl.name.toString())
         var baseType = Init(basecName,Name(""),Nil)
         var cStats = cl.templ.stats
-        classList = classList  +
+        featureMapper(featureName.toString()) =
           q"""class $cName extends $baseType {
                  var Super = null
                  ..$cStats
                 }
-                """
+                """ :: featureMapper(featureName.toString())
       }
     }
     }
   }
 
-  def lift(s : Defn.Class, t: Defn.Class): Unit = {
 
-  }
 
   def featureMerge(base: Defn.Object, lifter: Defn.Object): Defn.Object = {
     var fts0 = base.collect {case cls: Defn.Class => cls}
@@ -168,17 +276,15 @@ object MetaTest {
       fts0 foreach {liftCl => {
           val pattern(liftprefix,liftName) = liftCl.name.toString()
           if (clName == liftName) {
-            lift(liftCl,cl)
+            //lift(liftCl,cl)
           }
          }
        }
       }
      }
 
-
-
-    var stmts : List[Defn.Class] = classList.toList
-    var composite : Defn.Object = q"object CM {..$stmts}"
+    //var stmts : List[Defn.Class] = classList.toList
+    var composite : Defn.Object = null //q"object CM {..$stmts}"
     composite
 
   }
@@ -242,10 +348,38 @@ object MetaTest {
 }"""
 
 
-    var clss = f.collect { case cls: Defn.Object if cls.name.toString=="base" => cls }
+    var clss = f.collect { case cls: Defn.Object => cls }
     initialize(clss)
     //var cf = featureMerge1(clss(0),clss(1))
-    println(classList)
+    featureMapper foreach { f=>
+      {
+        println("feature name: " + f._1)
+        println("--------------")
+        println(f._2)
+
+        f._2 foreach {cl => {
+          println("Analyzing " + cl.name.toString())
+          println("-------------")
+          cl.templ.stats foreach { x => {
+            x match {
+              case m: Defn.Val => {println("val defn " + m.decltpe + " " + m.pats)}
+              case m: Defn.Var => {println("var defn " + m.decltpe + " " + m.pats)}
+              case m: Defn.Def => {println("def defn " + m.decltpe + " " + m.name)}
+              case _ => println("something else")
+            }
+          }}
+        }}
+      }
+
+    }
+
+    lift(
+      q"""
+         object CM {}
+       """,
+      q"""object CM1 {} """)
+
+
 
 
   }
