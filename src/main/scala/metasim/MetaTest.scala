@@ -125,7 +125,7 @@ object MetaTest {
         x match {
           case m: Defn.Val => {
             m.pats foreach { n =>
-              if (!(valList exists (p => (p.toString() == n.toString())))) {
+              if (!(valList exists (p => p.toString() == n.toString()))) {
                 var pat = p"$n"
                 var valType= m.decltpe getOrElse(null)
                 var newStmt: Defn.Val = null
@@ -168,26 +168,28 @@ object MetaTest {
         var baseType = Init(basecName,Name(""),Nil)
         val decorated = Init(Type.Name(base.name.toString()+"_"+clName),Name(""),Nil)
 
-        composite = q"""
-                class $cName extends $baseType {
-                 var Super = new $decorated {}
+        q"""
+           class $cName extends $baseType {
+              var Super = new $decorated {}
                  ..$constructed
-                }
-                """
+            }
+        """
 
-        composite
       }
-
-
-    var composite: Defn.Object = null
+    var compositeStmts : List[Stat] = null
     var lifterCls = lifter collect {case cl: Defn.Class => cl}
     var baseCls = base collect {case cl: Defn.Class => cl}
-
+    var baseMinusLifter = List[Defn.Class]()
+    var lifterMinusBase = List[Defn.Class]()
     var joint = scala.collection.mutable.Map[String,(Defn.Class,Defn.Class)]()
+    var baseInJoint = List[String]()
     lifterCls foreach {cl => {
-        var clName = cl.name.toString()
+        val pattern(prefix,clName) = cl.name.toString()
         var found = false
-        var c = baseCls find (x => x.name.toString()==clName)
+        var c = baseCls find (x => {
+          val pattern(pre,xname) = x.name.toString()
+          xname==clName
+        })
         var foundClass : Defn.Class =null
         c match {
           case Some(c) => {found=true; foundClass=c}
@@ -195,21 +197,38 @@ object MetaTest {
         }
         if (found) {
           joint = joint + (clName -> (cl,foundClass))
+          val pattern(pre, cname) = foundClass.name.toString()
+          baseInJoint = cname:: baseInJoint
         }
+        else lifterMinusBase = cl :: lifterMinusBase
       }
       var refinedCls = List[Defn.Class]()
+
       joint foreach { m =>
         {
           var lfter = m._2._1
           var base = m._2._2
           refinedCls = liftClass(lfter,base) :: refinedCls
         }
+      }
 
+      compositeStmts  = refinedCls ::: lifterMinusBase
+
+      baseCls foreach { b =>
+        {
+          val pattern(pre,cname)=b.name.toString()
+          if (!(baseInJoint contains cname)) {
+            compositeStmts = b :: compositeStmts
+          }
+        }
       }
     }
-
-
-    composite
+    var featureName = Term.Name(lifter.name.toString()+base.name.toString())
+    q"""
+       object $featureName {
+              ..$compositeStmts
+         }
+     """
   }
 
   def initialize(objs: List[Defn.Object]): Unit = {
@@ -258,37 +277,6 @@ object MetaTest {
     }
     }
   }
-
-
-
-  def featureMerge(base: Defn.Object, lifter: Defn.Object): Defn.Object = {
-    var fts0 = base.collect {case cls: Defn.Class => cls}
-    var fts1 = lifter.collect {case cls: Defn.Class => cls}
-
-
-    val pattern(prefix,className) = "Feature1Feature2_Graph"
-
-    println(prefix)
-    println(className)
-
-    fts1 foreach { cl => {
-      val pattern(prefix,clName) = cl.name.toString()
-      fts0 foreach {liftCl => {
-          val pattern(liftprefix,liftName) = liftCl.name.toString()
-          if (clName == liftName) {
-            //lift(liftCl,cl)
-          }
-         }
-       }
-      }
-     }
-
-    //var stmts : List[Defn.Class] = classList.toList
-    var composite : Defn.Object = null //q"object CM {..$stmts}"
-    composite
-
-  }
-
 
 
   def apply(): Unit = {
@@ -372,16 +360,21 @@ object MetaTest {
       }
 
     }
-
-    lift(
+    println("Feature merge test")
+    println("==================")
+    var lftStmts : List[Stat] = featureMapper("base")
+    var baseStmts : List[Stat] = featureMapper("AbstractBase")
+    var cmp = lift(
       q"""
-         object CM {}
+         object base {
+              ..$lftStmts
+         }
        """,
-      q"""object CM1 {} """)
+      q"""object AbstractBase {
+              ..$baseStmts
+         } """)
 
-
-
-
+    println(cmp)
   }
 
   def testMeta(): Unit = {
