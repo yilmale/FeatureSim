@@ -139,7 +139,8 @@ object MetaTest {
             }}
             case m: Defn.Var => {
               m.pats foreach { n =>
-                if (!(varList exists (p => p.toString() == n.toString()))) {
+                if (!(varList exists (p => p.toString() == n.toString())) &&
+                     (n.toString!="Super")) {
                   var pat = p"$n"
                   var varType= m.decltpe getOrElse(null)
                   var newStmt: Defn.Var = null
@@ -153,11 +154,10 @@ object MetaTest {
               }
             }
             case m: Defn.Def => {
-              println("def defn " + m.decltpe + " " + m.name)
               if (!(metList exists (p => p.toString() == m.name.toString())))
                 constructed = m :: constructed
             }
-            case _ => println("something else")
+            case _ =>
           }
         }
       }
@@ -212,18 +212,25 @@ object MetaTest {
         }
       }
 
-      compositeStmts  = refinedCls ::: lifterMinusBase
+      compositeStmts  = (refinedCls ::: lifterMinusBase) ::: baseCls
 
-      baseCls foreach { b =>
+      /*baseCls foreach { b =>
         {
           val pattern(pre,cname)=b.name.toString()
           if (!(baseInJoint contains cname)) {
             compositeStmts = b :: compositeStmts
           }
         }
-      }
+      }*/
     }
-    var featureName = Term.Name(lifter.name.toString()+base.name.toString())
+
+    var featureName : Term.Name = null
+
+    if (base.name.toString() == "AbstractBase")
+      featureName = Term.Name(lifter.name.toString())
+    else
+      featureName = Term.Name(lifter.name.toString()+base.name.toString())
+
     q"""
        object $featureName {
               ..$compositeStmts
@@ -247,29 +254,27 @@ object MetaTest {
       if (!(classDefined.keys exists(c=>c.name.toString() == cl.name.toString()))) {
         classDefined += (cl -> true)
         var cName = Type.Name(featureName+"_"+cl.name.toString)
-        var basecName = Type.Name("Base_" + cl.name.toString())
+        var basecName = Type.Name("Base_" + "Abstract" + cl.name.toString())
         var baseType = Init(basecName,Name(""),Nil)
         var cStats = cl.templ.stats
         featureMapper("AbstractBase") =
           q"""abstract class $basecName {
-                var Super : $basecName
+                var Super : $basecName =null
             }
              """ :: featureMapper("AbstractBase")
         featureMapper(featureName.toString()) =
           q"""class $cName extends $baseType {
-                 var Super = null
                  ..$cStats
                 }
                 """ :: featureMapper(featureName.toString())
       }
       else {
         var cName = Type.Name(featureName+"_"+cl.name.toString)
-        var basecName = Type.Name("Base_" + cl.name.toString())
+        var basecName = Type.Name("Base_" + "Abstract" + cl.name.toString())
         var baseType = Init(basecName,Name(""),Nil)
         var cStats = cl.templ.stats
         featureMapper(featureName.toString()) =
           q"""class $cName extends $baseType {
-                 var Super = null
                  ..$cStats
                 }
                 """ :: featureMapper(featureName.toString())
@@ -353,7 +358,7 @@ object MetaTest {
               case m: Defn.Val => {println("val defn " + m.decltpe + " " + m.pats)}
               case m: Defn.Var => {println("var defn " + m.decltpe + " " + m.pats)}
               case m: Defn.Def => {println("def defn " + m.decltpe + " " + m.name)}
-              case _ => println("something else")
+              case _ =>
             }
           }}
         }}
@@ -363,7 +368,15 @@ object MetaTest {
     println("Feature merge test")
     println("==================")
     var lftStmts : List[Stat] = featureMapper("base")
+    println("base statements")
+    println("===============")
+    println(lftStmts)
     var baseStmts : List[Stat] = featureMapper("AbstractBase")
+    println("Abstract Base Statements")
+    println("========================")
+    println(baseStmts)
+    println("After merge")
+    println("===========")
     var cmp = lift(
       q"""
          object base {
@@ -375,6 +388,19 @@ object MetaTest {
          } """)
 
     println(cmp)
+
+    println("===========")
+    println("Merge base with featureb")
+    println("===========")
+    var fbStmts : List[Stat] = featureMapper("featureb")
+    var cmp2 = lift(q"""
+         object featureb {
+              ..$fbStmts
+         }
+       """,cmp)
+
+    println(cmp2)
+
   }
 
   def testMeta(): Unit = {
