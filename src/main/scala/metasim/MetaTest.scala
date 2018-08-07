@@ -239,6 +239,41 @@ object MetaTest {
   }
 
   def initialize(objs: List[Defn.Object]): Unit = {
+    def initializeFeature(classes: List[Defn.Class], featureName: Term.Name): Unit = {
+      classes foreach { cl =>
+      {
+        if (!(classDefined.keys exists(c=>c.name.toString() == cl.name.toString()))) {
+          classDefined += (cl -> true)
+          var cName = Type.Name(featureName+"_"+cl.name.toString)
+          var basecName = Type.Name("Base_" + "Abstract" + cl.name.toString())
+          var baseType = Init(basecName,Name(""),Nil)
+          var cStats = cl.templ.stats
+          featureMapper("AbstractBase") =
+            q"""abstract class $basecName {
+                var Super : $basecName =null
+            }
+             """ :: featureMapper("AbstractBase")
+          featureMapper(featureName.toString()) =
+            q"""class $cName extends $baseType {
+                 ..$cStats
+                }
+                """ :: featureMapper(featureName.toString())
+        }
+        else {
+          var cName = Type.Name(featureName+"_"+cl.name.toString)
+          var basecName = Type.Name("Base_" + "Abstract" + cl.name.toString())
+          var baseType = Init(basecName,Name(""),Nil)
+          var cStats = cl.templ.stats
+          featureMapper(featureName.toString()) =
+            q"""class $cName extends $baseType {
+                 ..$cStats
+                }
+                """ :: featureMapper(featureName.toString())
+        }
+      }
+      }
+    }
+
     featureMapper += ("AbstractBase" -> List[Defn.Class]())
     objs foreach {o => {
         featureMapper += (o.name.toString() -> List[Defn.Class]())
@@ -248,40 +283,7 @@ object MetaTest {
     }
   }
 
-  def initializeFeature(classes: List[Defn.Class], featureName: Term.Name): Unit = {
-    classes foreach { cl =>
-    {
-      if (!(classDefined.keys exists(c=>c.name.toString() == cl.name.toString()))) {
-        classDefined += (cl -> true)
-        var cName = Type.Name(featureName+"_"+cl.name.toString)
-        var basecName = Type.Name("Base_" + "Abstract" + cl.name.toString())
-        var baseType = Init(basecName,Name(""),Nil)
-        var cStats = cl.templ.stats
-        featureMapper("AbstractBase") =
-          q"""abstract class $basecName {
-                var Super : $basecName =null
-            }
-             """ :: featureMapper("AbstractBase")
-        featureMapper(featureName.toString()) =
-          q"""class $cName extends $baseType {
-                 ..$cStats
-                }
-                """ :: featureMapper(featureName.toString())
-      }
-      else {
-        var cName = Type.Name(featureName+"_"+cl.name.toString)
-        var basecName = Type.Name("Base_" + "Abstract" + cl.name.toString())
-        var baseType = Init(basecName,Name(""),Nil)
-        var cStats = cl.templ.stats
-        featureMapper(featureName.toString()) =
-          q"""class $cName extends $baseType {
-                 ..$cStats
-                }
-                """ :: featureMapper(featureName.toString())
-      }
-    }
-    }
-  }
+
 
 
   def apply(): Unit = {
