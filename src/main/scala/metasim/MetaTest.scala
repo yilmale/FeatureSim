@@ -48,9 +48,22 @@ object FeatureSpec {
       "F2"-> false,
       "F42"-> true
     )
-    val c  = evaluate(n,rmodel)
+
+    val m = FeatureTree(Base("base", List(
+      Feature("featureb"),
+      Feature("featurec")
+    )))
+
+    var rmodel1 = scala.collection.mutable.Map[String,Boolean](
+      "featureb" -> true,
+      "featureb" -> true
+    )
+
+
+    val c  = evaluate(m,rmodel1)
     println(c)
   }
+
 
   def evaluate(x: FeatureTree, resMod: scala.collection.mutable.Map[String, Boolean]): String = {
     var composite : String = ""
@@ -214,14 +227,6 @@ object MetaTest {
 
       compositeStmts  = (refinedCls ::: lifterMinusBase) ::: baseCls
 
-      /*baseCls foreach { b =>
-        {
-          val pattern(pre,cname)=b.name.toString()
-          if (!(baseInJoint contains cname)) {
-            compositeStmts = b :: compositeStmts
-          }
-        }
-      }*/
     }
 
     var featureName : Term.Name = null
@@ -340,7 +345,17 @@ object MetaTest {
         var w : Double = 0
     }
 
-}"""
+}
+  object featurec {
+    refines {
+      class Node {
+        def newNodeMethod() : Unit = {
+
+        }
+      }
+    }
+  }
+      """
 
 
     var clss = f.collect { case cls: Defn.Object => cls }
@@ -402,6 +417,10 @@ object MetaTest {
        """,cmp)
 
     println(cmp2)
+
+    println("*****************")
+
+
 
   }
 
