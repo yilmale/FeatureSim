@@ -1,28 +1,11 @@
 package metasim
 
+import metasim.MetaTest.{featureMapper, initialize}
+
 import scala.meta._
 
-abstract class Graph {
-  val Super: Graph
-}
 
-class BaseGraph extends Graph {
-  var x : Int = 0
-  val Super: Graph = null
-  def G() {}
-}
 
-class CompositeGraph extends Graph {
-  var y : Int = 5
-  val Super = new BaseGraph {}
-  def CG()= {Super.G()}
-}
-
-class Composite2Graph extends Graph {
-  var y : Int = 5
-  val Super = new CompositeGraph {}
-  def C2G() = {Super.CG()}
-}
 
 abstract class FeatureExpression {var fname: String}
 case class And(name:String, children: List[FeatureExpression]) extends FeatureExpression {var fname = name}
@@ -117,6 +100,175 @@ object FeatureSpec {
       }
     }
   }
+}
+
+
+object MetaTestwithTraits {
+
+  var featureMapper = scala.collection.mutable.Map[String,List[Defn]]()
+
+  def lift(lifter: Defn.Object, base: Defn.Object): Defn.Object = {
+    def liftClass(s : Defn.Class, t: Defn.Trait): Defn.Class = {
+      var clname = s.name
+      var trname = t.name
+      var cstmts = s.templ.stats
+      var traitType = Init(trname,Name(""),Nil)
+
+      q"""class $clname extends FeatureModel with $traitType {
+              ..$cstmts
+         }"""
+    }
+
+    var baseCls = base collect {case c : Defn.Class => c}
+    var lftTrs = lifter collect {case t : Defn.Trait => t}
+    var foundTrait : Defn.Trait = null
+    var refinedCls = List[Defn.Class]()
+
+    baseCls foreach { b =>
+      {
+        var found = false
+        var f = lftTrs find (x => x.name.toString() == b.name.toString())
+        f match {
+          case Some(x) => {found = true; foundTrait = x}
+          case None =>
+        }
+
+        if (found)
+          refinedCls = liftClass(b,foundTrait) :: refinedCls
+        else
+          refinedCls = b :: refinedCls
+      }
+    }
+
+    var lftCls = lifter collect {case c : Defn.Class => c}
+    refinedCls = refinedCls ::: lftCls
+
+    var baseTrs = base collect {case t : Defn.Trait => t}
+
+    var compositeStmts : List[Defn] = (refinedCls ::: baseTrs) ::: lftTrs
+
+    var featureName = Term.Name(lifter.name.toString() + "_" + base.name.toString())
+
+    q"""
+       object $featureName {
+              ..$compositeStmts
+         }
+     """
+  }
+
+  def initialize(objs: List[Defn.Object]): Unit = {
+    def initializeFeature(defns: List[Defn], featureName: Term.Name): Unit = {
+      defns foreach { d =>
+        {
+          d match {
+            case c : Defn.Class => {
+              var cStats = c.templ.stats
+              //var cName = Type.Name(featureName+"_"+cl.name.toString)
+              var cName = Type.Name(c.name.toString)
+              featureMapper(featureName.toString()) =
+              q"""class $cName {
+                 ..$cStats
+                }
+                """ :: featureMapper(featureName.toString())
+            }
+            case t : Defn.Trait => {
+              var tStats = t.templ.stats
+              var tName = Type.Name(featureName + "_"+ t.name.toString)
+              featureMapper(featureName.toString()) =
+                q"""trait $tName {
+                 ..$tStats
+                }
+                """ :: featureMapper(featureName.toString())
+            }
+          }
+        }
+      }
+
+    }
+
+    featureMapper += ("FeatureModel" -> List(q"class FeatureModel {}"))
+    objs foreach {o =>
+    {
+      featureMapper += (o.name.toString() -> List[Defn]())
+      var cls : List[Defn] = o collect {
+        case cl: Defn.Class => cl
+        case tr : Defn.Trait => tr}
+      initializeFeature(cls,o.name)
+    }}
+  }
+
+  def apply(): Unit = {
+    val f = source"""  import Collaboration._
+  object base {
+   class Graph {
+    var a1 : Int = 0
+    var a2 : Int = 1
+
+    def myPrint() : Int = {
+      var x = 5
+      x
+    }
+
+    def test1() : Int = {
+       var y = 10
+    }
+   }
+   class Node {
+     def test2() : Int = {
+      var y = 10
+     }
+   }
+
+   class Edge {
+      var e : Int = 15
+   }
+
+ }
+
+  object featureb {
+      trait Graph {
+        def newGraphMethod() : Unit = {
+        }
+
+    }
+
+    trait Edge {
+        def newEdgeMethod() : Unit = {
+
+        }
+    }
+
+    trait Node { }
+
+    class Weight {
+        var w : Double = 0
+    }
+
+}
+  object featurec {
+    trait Node {
+        def newNodeMethod() : Unit = {
+
+        }
+      }
+  }"""
+
+    var clss = f.collect { case cls: Defn.Object => cls }
+    initialize(clss)
+    featureMapper foreach { f=>
+    {
+      println("feature name: " + f._1)
+      println("--------------")
+      println(f._2)
+
+    }
+
+    }
+  }
+
+
+
+
 }
 
 
