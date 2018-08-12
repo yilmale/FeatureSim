@@ -106,6 +106,7 @@ object FeatureSpec {
 object MetaTestwithTraits {
 
   var featureMapper = scala.collection.mutable.Map[String,List[Defn]]()
+  val pattern = "([A-Za-z0-9]*)_([A-Za-z0-9]+)".r
 
   def lift(lifter: Defn.Object, base: Defn.Object): Defn.Object = {
     def liftClass(s : Defn.Class, t: Defn.Trait): Defn.Class = {
@@ -114,7 +115,7 @@ object MetaTestwithTraits {
       var cstmts = s.templ.stats
       var traitType = Init(trname,Name(""),Nil)
 
-      q"""class $clname extends FeatureModel with $traitType {
+      q"""class $clname extends Base_FeatureModel with $traitType {
               ..$cstmts
          }"""
     }
@@ -127,7 +128,11 @@ object MetaTestwithTraits {
     baseCls foreach { b =>
       {
         var found = false
-        var f = lftTrs find (x => x.name.toString() == b.name.toString())
+        val pattern(prefix,bname) = b.name.toString()
+        var f = lftTrs find (x => {
+          val pattern(tprefix,tname) = x.name.toString()
+          tname == bname
+        })
         f match {
           case Some(x) => {found = true; foundTrait = x}
           case None =>
@@ -164,7 +169,7 @@ object MetaTestwithTraits {
             case c : Defn.Class => {
               var cStats = c.templ.stats
               //var cName = Type.Name(featureName+"_"+cl.name.toString)
-              var cName = Type.Name(c.name.toString)
+              var cName = Type.Name(featureName.toString()+"_"+c.name.toString)
               featureMapper(featureName.toString()) =
               q"""class $cName {
                  ..$cStats
@@ -186,7 +191,7 @@ object MetaTestwithTraits {
 
     }
 
-    featureMapper += ("FeatureModel" -> List(q"class FeatureModel {}"))
+    featureMapper += ("FeatureModel" -> List(q"class Base_FeatureModel {}"))
     objs foreach {o =>
     {
       featureMapper += (o.name.toString() -> List[Defn]())
@@ -256,14 +261,44 @@ object MetaTestwithTraits {
     var clss = f.collect { case cls: Defn.Object => cls }
     initialize(clss)
     featureMapper foreach { f=>
-    {
-      println("feature name: " + f._1)
-      println("--------------")
-      println(f._2)
-
+      {
+        println("feature name: " + f._1)
+        println("--------------")
+        println(f._2)
+      }
     }
 
-    }
+    var lftStmts : List[Stat] = featureMapper("base")
+    println("base statements")
+    println("===============")
+    println(lftStmts)
+    var baseStmts : List[Stat] = featureMapper("FeatureModel")
+    println("Abstract Base Statements")
+    println("========================")
+    println(baseStmts)
+    println("After merge")
+    println("===========")
+    var cmp = lift(
+      q"""
+         object base {
+              ..$lftStmts
+         }
+       """,
+      q"""object AbstractBase {
+              ..$baseStmts
+         } """)
+
+    println(cmp)
+    println("After merge")
+    println("===========")
+    var fbStmts : List[Stat] = featureMapper("featureb")
+    var cmp2 = lift(
+      q"""
+         object featureb {
+              ..$fbStmts
+         }""",cmp)
+    println(cmp2)
+
   }
 
 
