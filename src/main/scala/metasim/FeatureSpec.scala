@@ -10,6 +10,7 @@ case class Xor(name:String, children: List[FeatureExpression]) extends FeatureEx
 case class FeatureTree(node: FeatureExpression)
 
 object FeatureSpec {
+  var composite : String = ""
   def apply(): Unit = {
     val n = FeatureTree(Base("F",List(
       And("F0",List(Feature("F01"),Feature("F02"))),
@@ -35,48 +36,56 @@ object FeatureSpec {
       "featureb" -> true
     )
 
+    evaluate(n,rmodel)
+    println(composite)
+    println(compose(composite split("_")))
 
-    val c  = evaluate(m,rmodel1)
-    println(c)
+
+  }
+
+  def compose(flist : Array[String]): String = {
+    var C : String = flist(0)
+    for(i <- 1 until flist.length) {
+      C = "(" + flist(i) + "," + C + ")"
+    }
+    C
   }
 
 
-  def evaluate(x: FeatureTree, resMod: scala.collection.mutable.Map[String, Boolean]): String = {
-    var composite : String = ""
+
+
+  def evaluate(x: FeatureTree, resMod: scala.collection.mutable.Map[String, Boolean]): Unit = {
+
     x.node match {
-      case f : Feature => {composite = composite + "_" + f.name; composite}
+      case f : Feature => {composite = composite + "_" + f.name}
       case b : Base => {
         composite = composite + b.name
         b.children foreach { c =>
-          composite = composite + evaluate(FeatureTree(c),resMod)
+          evaluate(FeatureTree(c),resMod)
         }
-        composite
       }
       case op : Optional => {
         if ((resMod.keys.exists(x => (x == op.fname) && (resMod(op.fname) == true)))) {
           op.children foreach { c =>
-            composite = composite + "_" + evaluate(FeatureTree(c),resMod)
+            evaluate(FeatureTree(c),resMod)
           }
         }
-        composite
       }
       case a : And => {
         composite = composite + "_" + a.name
         a.children foreach { c =>
-          composite = composite + "_" + evaluate(FeatureTree(c),resMod)
+           evaluate(FeatureTree(c),resMod)
         }
-        composite
       }
       case o : Or => {
         composite = composite + "_" + o.name
         o.children foreach { c =>
         {
           if ((resMod.keys.exists(x => (x == c.fname) && (resMod(x) == true)))) {
-            composite = composite + "_" + evaluate(FeatureTree(c),resMod)
+             evaluate(FeatureTree(c),resMod)
           }
         }
         }
-        composite
       }
       case x : Xor => {
         var found = false
@@ -85,11 +94,10 @@ object FeatureSpec {
           if (found==false) {
             if ((resMod.keys.exists(x => (x == c.fname) && (resMod(x) == true)))) {
               found = true
-              composite = composite + "_" + evaluate(FeatureTree(c),resMod)
+              evaluate(FeatureTree(c),resMod)
             }
           }
         }
-        composite
       }
     }
   }

@@ -102,98 +102,97 @@ object FeatureComposer {
     }}
   }
 
+  def transform(f: Source): List[Defn.Object] = {
+    var listObjs = List[Defn.Object]()
+
+    var fns = f collect {case o: Defn.Object  => o}
+    fns(0).templ.stats foreach { s =>
+    {
+      var stmts = List[Stat]()
+      s match {
+        case m : Term.Apply => {
+          val pattern1(_,x,_) = m.fun.toString()
+          m.args(0).children collect {
+            case c : Defn.Class => stmts = c :: stmts
+            case tr : Defn.Trait => stmts = tr  :: stmts
+          }
+          var t = Term.Name(x)
+          listObjs = q"object $t { ..$stmts}" :: listObjs
+        }
+        case _ =>
+      }
+    }
+
+    }
+    listObjs
+  }
+
   def apply(): Unit = {
 
     val f = source"""
     import Collaboration._
     object FeatureModel {
-
      feature("base") {
-    class Graph {
-     var a1 : Int = 0
-     var a2 : Int = 1
+        class Graph {
+           var a1 : Int = 0
+           var a2 : Int = 1
 
-     def myPrint() : Int = {
-      var x = 5
-      x
-    }
+           def myPrint() : Int = {
+              var x = 5
+              x
+            }
 
-    def test1() : Int = {
-       var y = 10
-    }
-   }
-   class Node {
-     def test2() : Int = {
-      var y = 10
-     }
-   }
+            def test1() : Int = {
+              var y = 10
+            }
+         }
+        class Node {
+           def test2() : Int = {
+              var y = 10
+            }
+        }
 
-   class Edge {
-      var e : Int = 15
-   }
+        class Edge {
+          var e : Int = 15
+        }
+      }
 
- }
-
-  feature("featureb") {
+    feature("featureb") {
       trait Graph {
         def newGraphMethod() : Unit = {
         }
 
     }
 
-    trait Edge {
+      trait Edge {
         def newEdgeMethod() : Unit = {
-
-        }
-    }
-
-    trait Node { }
-
-    class Weight {
-        var w : Double = 0
-    }
-    }
-
-  feature("featurec") {
-    trait Node {
-        def newNodeMethod() : Unit = {
-
         }
       }
-  }
+
+      trait Node { }
+
+      class Weight {
+        var w : Double = 0
+      }
+    }
+
+    feature("featurec") {
+      trait Node {
+        def newNodeMethod() : Unit = {
+        }
+      }
+    }
   }"""
 
 
-    var listObjs = List[Defn.Object]()
 
-    var fns = f collect {case o: Defn.Object  => o}
-    fns(0).templ.stats foreach { s =>
-      {
-        var stmts = List[Stat]()
-        s match {
-        case m : Term.Apply => {
-          val pattern1(_,x,_) = m.fun.toString()
-          println("function application: " + x + " " + m.args)
-          m.args(0).children collect {
-            case c : Defn.Class => stmts = c :: stmts
-            case tr : Defn.Trait => stmts = tr  :: stmts
-          }
 
-          var t = Term.Name(x)
-          listObjs = q"object $t { ..$stmts}" :: listObjs
-        }
-        case _ => //println("something else")
-      }
-      }
 
-    }
+    initialize(transform(f))
 
-    println("Transformed.....")
-    println(listObjs)
 
-    //var clss = f.collect { case cls: Defn.Object => cls }
-    initialize(listObjs)
-    //initialize(clss)
+
+
     featureMapper foreach { f=>
     {
       println("feature name: " + f._1)
