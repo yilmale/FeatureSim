@@ -41,7 +41,7 @@ object FeatureSimMain extends App {
 
 
   FeatureSpec()
-  MetaTestwithTraits()
+  FeatureComposer()
 
   //var i = new InferenceTest()
 
