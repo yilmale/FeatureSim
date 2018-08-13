@@ -37,7 +37,6 @@ object FeatureSpec {
     )
 
     evaluate(n,rmodel)
-    println(composite)
     println(compose(composite split("_")))
 
 
