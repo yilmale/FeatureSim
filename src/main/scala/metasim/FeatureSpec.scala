@@ -1,24 +1,31 @@
 package metasim
 
+import scala.meta.Defn
+
 abstract class FeatureExpression {var fname: String}
 case class And(name:String, children: List[FeatureExpression]) extends FeatureExpression {var fname = name}
 case class Or(name:String, children: List[FeatureExpression]) extends FeatureExpression {var fname = name}
-case class Base(name:String, children: List[FeatureExpression]) extends FeatureExpression {var fname = name}
+case class Base(name:String) extends FeatureExpression {var fname = name}
 case class Feature(name: String) extends FeatureExpression {var fname = name}
 case class Optional(name: String, children: List[FeatureExpression]=null) extends FeatureExpression {var  fname = name}
 case class Xor(name:String, children: List[FeatureExpression]) extends FeatureExpression {var fname = name}
-case class FeatureTree(node: FeatureExpression)
+case class FeatureTree(node: FeatureExpression,
+                       children: List[FeatureExpression] = List[FeatureExpression]())
+case class ResolutionModel(rm: scala.collection.mutable.Map[String,Boolean])
 
 object FeatureSpec {
+  type RM = scala.collection.mutable.Map[String,Boolean]
   var composite : String = ""
-  def apply(): Unit = {
-    val n = FeatureTree(Base("F",List(
+  var featureModel : FeatureTree = null
+  var resolution: RM = null
+  def apply(fm: FeatureTree,res: ResolutionModel): Array[String] = {
+    val n = FeatureTree(Base("F"),List(
       And("F0",List(Feature("F01"),Feature("F02"))),
       Or("F1",List(Feature("F11"),Feature("F12"))),
       Optional("F2", List(Feature("F2"))),
       Feature("F3"),
       Xor("F4",List(Feature("F41"),Feature("F42")))
-    )))
+    ))
     var rmodel = scala.collection.mutable.Map[String,Boolean](
       "F11"->true,
       "F12"->false,
@@ -26,62 +33,54 @@ object FeatureSpec {
       "F42"-> true
     )
 
-    val m = FeatureTree(Base("base", List(
+    val m = FeatureTree(Base("base"), List(
       Feature("featureb"),
       Feature("featurec")
-    )))
-
-    var rmodel1 = scala.collection.mutable.Map[String,Boolean](
-      "featureb" -> true,
-      "featureb" -> true
-    )
-
-    evaluate(n,rmodel)
-    println(compose(composite split("_")))
+    ))
 
 
+    featureModel = fm
+    resolution = res.rm
+    compile()
   }
 
-  def compose(flist : Array[String]): String = {
-    var C : String = flist(0)
-    for(i <- 1 until flist.length) {
-      C = "(" + flist(i) + "," + C + ")"
-    }
-    C
+  def compile(): Array[String] = {
+    evaluate(featureModel)
+    composite split("_")
   }
 
 
 
 
-  def evaluate(x: FeatureTree, resMod: scala.collection.mutable.Map[String, Boolean]): Unit = {
+  def evaluate(x: FeatureTree): Unit = {
 
     x.node match {
       case f : Feature => {composite = composite + "_" + f.name}
       case b : Base => {
         composite = composite + b.name
-        b.children foreach { c =>
-          evaluate(FeatureTree(c),resMod)
+        x.children foreach { c =>
+          evaluate(FeatureTree(c))
         }
       }
       case op : Optional => {
-        if ((resMod.keys.exists(x => (x == op.fname) && (resMod(op.fname) == true)))) {
+        if ((resolution.keys.exists(x => (x == op.fname) && (resolution(op.fname) == true)))) {
           op.children foreach { c =>
-            evaluate(FeatureTree(c),resMod)
+            evaluate(FeatureTree(c))
           }
         }
       }
       case a : And => {
         composite = composite + "_" + a.name
         a.children foreach { c =>
-           evaluate(FeatureTree(c),resMod)
+           evaluate(FeatureTree(c))
         }
       }
       case o : Or => {
         composite = composite + "_" + o.name
         o.children foreach { c =>
         {
-          if ((resMod.keys.exists(x => (x == c.fname) && (resMod(x) == true)))) {
-             evaluate(FeatureTree(c),resMod)
+          if ((resolution.keys.exists(x => (x == c.fname) && (resolution(x) == true)))) {
+             evaluate(FeatureTree(c))
           }
         }
         }
@@ -91,9 +90,9 @@ object FeatureSpec {
         composite = composite + "_" + x.name
         x.children foreach { c =>
           if (found==false) {
-            if ((resMod.keys.exists(x => (x == c.fname) && (resMod(x) == true)))) {
+            if ((resolution.keys.exists(x => (x == c.fname) && (resolution(x) == true)))) {
               found = true
-              evaluate(FeatureTree(c),resMod)
+              evaluate(FeatureTree(c))
             }
           }
         }

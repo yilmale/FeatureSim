@@ -2,6 +2,8 @@ package metasim
 
 import scala.meta._
 
+
+
 object FeatureComposer {
 
   var featureMapper = scala.collection.mutable.Map[String,List[Defn]]()
@@ -13,9 +15,13 @@ object FeatureComposer {
       var clname = s.name
       var trname = t.name
       var cstmts = s.templ.stats
+      var sInits = s.templ.inits
       var traitType = Init(trname,Name(""),Nil)
+      sInits = sInits ::: List(traitType)
+      if (sInits.head.name.toString() != "Base_FeatureModel")
+        sInits = Init(Type.Name("Base_FeatureModel"), Name("Base_FeatureModel"), Nil) :: sInits
 
-      q"""class $clname extends Base_FeatureModel with $traitType {
+      q"""class $clname extends ..$sInits {
               ..$cstmts
          }"""
     }
@@ -75,6 +81,7 @@ object FeatureComposer {
                  ..$cStats
                 }
                 """ :: featureMapper(featureName.toString())
+
           }
           case t : Defn.Trait => {
             var tStats = t.templ.stats
@@ -127,71 +134,55 @@ object FeatureComposer {
     listObjs
   }
 
-  def apply(): Unit = {
+  def reduce(merged: Defn.Object): Defn.Object = {
+    var stmts = List[Stat]()
+    merged.templ.stats foreach { s =>
+      {
+        s match {
+          case c: Defn.Class => {
+            val pattern(pre, name) = c.name.toString()
+            var newName = Type.Name(name)
+            var clStmts = c.templ.stats
+            var cInits = c.templ.inits
+            stmts = q"class $newName extends ..$cInits {..$clStmts}" :: stmts
+          }
+          case _ => stmts = s :: stmts
+        }
+      }
+    }
+    var reduceName = merged.name
+    q"object $reduceName {..$stmts}"
+  }
 
-    val f = source"""
-    import Collaboration._
-    object FeatureModel {
-     feature("base") {
-        class Graph {
-           var a1 : Int = 0
-           var a2 : Int = 1
-
-           def myPrint() : Int = {
-              var x = 5
-              x
-            }
-
-            def test1() : Int = {
-              var y = 10
-            }
+  def merge(features: Array[String]): Defn.Object = {
+    var lftStmts : List[Stat] = featureMapper(features(0))
+    var baseStmts : List[Stat] = featureMapper("FeatureModel")
+    var lifter = Term.Name(features(0))
+    var composition = lift(
+      q"""
+         object $lifter {
+              ..$lftStmts
          }
-        class Node {
-           def test2() : Int = {
-              var y = 10
-            }
-        }
+       """,
+      q"""object AbstractBase {
+              ..$baseStmts
+         } """)
 
-        class Edge {
-          var e : Int = 15
-        }
-      }
-
-    feature("featureb") {
-      trait Graph {
-        def newGraphMethod() : Unit = {
-        }
-
+    for (i <- 1 until features.length) {
+       lftStmts = featureMapper(features(i))
+       lifter = Term.Name(features(i))
+       composition = lift(q"""
+         object $lifter {
+              ..$lftStmts
+         }
+       """,composition)
     }
+    composition
+  }
 
-      trait Edge {
-        def newEdgeMethod() : Unit = {
-        }
-      }
-
-      trait Node { }
-
-      class Weight {
-        var w : Double = 0
-      }
-    }
-
-    feature("featurec") {
-      trait Node {
-        def newNodeMethod() : Unit = {
-        }
-      }
-    }
-  }"""
-
-
-
-
+  def apply(f: Source): Unit = {
 
     initialize(transform(f))
-
-
-
 
     featureMapper foreach { f=>
     {
@@ -201,36 +192,6 @@ object FeatureComposer {
     }
     }
 
-    var lftStmts : List[Stat] = featureMapper("base")
-    println("base statements")
-    println("===============")
-    println(lftStmts)
-    var baseStmts : List[Stat] = featureMapper("FeatureModel")
-    println("Abstract Base Statements")
-    println("========================")
-    println(baseStmts)
-    println("After merge")
-    println("===========")
-    var cmp = lift(
-      q"""
-         object base {
-              ..$lftStmts
-         }
-       """,
-      q"""object AbstractBase {
-              ..$baseStmts
-         } """)
-
-    println(cmp)
-    println("After merge")
-    println("===========")
-    var fbStmts : List[Stat] = featureMapper("featureb")
-    var cmp2 = lift(
-      q"""
-         object featureb {
-              ..$fbStmts
-         }""",cmp)
-    println(cmp2)
 
   }
 
