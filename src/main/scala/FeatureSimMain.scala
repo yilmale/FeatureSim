@@ -10,6 +10,7 @@ import scala.util.Random
 import metasim._
 import coherence._
 import coherence.CoMod._
+import scala.meta._
 
 
 object FeatureSimMain extends App {
@@ -38,10 +39,81 @@ object FeatureSimMain extends App {
 
 
 */
+  import FeatureComposer._
+  var fspec= FeatureSpec(
+                  FeatureTree(Base("base"), List(
+                       Feature("featureb"),
+                       Feature("featurec"))),
+                  ResolutionModel(scala.collection.mutable.Map[String,Boolean](
+                    "featureb" -> true,
+                    "featurec" -> true)))
+
+  val s = source"""
+    import Collaboration._
+    object FeatureModel {
+     feature("base") {
+        class Graph {
+           var a1 : Int = 0
+           var a2 : Int = 1
+
+           def myPrint() : Int = {
+              var x = 5
+              x
+            }
+
+            def test1() : Int = {
+              var y = 10
+            }
+         }
+        class Node {
+           def test2() : Int = {
+              var y = 10
+            }
+        }
+
+        class Edge {
+          var e : Int = 15
+        }
+      }
+
+    feature("featureb") {
+      trait Graph {
+        def newGraphMethod() : Unit = {
+        }
+
+    }
+
+      trait Edge {
+        def newEdgeMethod() : Unit = {
+        }
+      }
+
+      trait Node { }
+
+      class Weight {
+        var w : Double = 0
+      }
+    }
+
+    feature("featurec") {
+      trait Node {
+        def newNodeMethod() : Unit = {
+        }
+      }
+
+      trait Weight {
+        def newWeightMethod() : Unit = {}
+      }
+    }
+  }"""
 
 
-  FeatureSpec()
-  MetaTest()
+  FeatureComposer(s)
+  var composite = reduce(merge(fspec))
+  println("Composed program")
+  println("=================")
+  println(composite)
+
 
   //var i = new InferenceTest()
 
