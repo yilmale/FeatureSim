@@ -2,6 +2,35 @@ package metasim
 
 import scala.meta._
 
+class A {
+  object A1 {
+    def apply(): Unit = {
+      println("A-A1")
+    }
+
+  }
+
+  object A2 {
+    def apply(): Unit = {
+      println("A-A2")
+    }
+  }
+}
+
+trait C {
+  object A1 {
+    def apply(): Unit = {
+      println("C-A1")
+    }
+  }
+}
+
+class B extends A with C {
+    super.A1()
+
+}
+
+
 
 
 object FeatureComposer {

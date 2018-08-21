@@ -108,6 +108,9 @@ object FeatureSimMain extends App {
   }"""
 
 
+
+
+
   FeatureComposer(s)
   var composite = reduce(merge(fspec))
   println("Composed program")
