@@ -2,33 +2,30 @@ package metasim
 
 import scala.meta._
 
-class A {
-  object A1 {
-    def apply(): Unit = {
-      println("A-A1")
-    }
+import featuremodel.Collaboration._
+object FeatureModel {
+  feature("base") {
+    class MyPatch {
 
+      object PatchSetUp {
+        def apply(): Unit = {
+          println("A-A1")
+        }
+      }
+    }
   }
 
-  object A2 {
-    def apply(): Unit = {
-      println("A-A2")
+  feature("patchWithGrass") {
+    trait MyPatch {
+      object PatchSetUp {
+        def apply(): Unit = {
+          println("PatchWithGrass-A1")
+        }
+      }
     }
   }
 }
 
-trait C {
-  object A1 {
-    def apply(): Unit = {
-      println("C-A1")
-    }
-  }
-}
-
-class B extends A with C {
-    super.A1()
-
-}
 
 
 
@@ -55,6 +52,7 @@ object FeatureComposer {
          }"""
     }
 
+
     var baseCls = base collect {case c : Defn.Class => c}
     var lftTrs = lifter collect {case t : Defn.Trait => t}
     var foundTrait : Defn.Trait = null
@@ -77,7 +75,8 @@ object FeatureComposer {
         refinedCls = liftClass(b,foundTrait) :: refinedCls
       else
         refinedCls = b :: refinedCls
-    }
+
+     }
     }
 
     var lftCls = lifter collect {case c : Defn.Class => c}
@@ -88,6 +87,7 @@ object FeatureComposer {
     var compositeStmts : List[Defn] = (refinedCls ::: baseTrs) ::: lftTrs
 
     var featureName = Term.Name(lifter.name.toString() + "_" + base.name.toString())
+
 
     q"""
        object $featureName {
@@ -103,7 +103,6 @@ object FeatureComposer {
         d match {
           case c : Defn.Class => {
             var cStats = c.templ.stats
-            //var cName = Type.Name(featureName+"_"+cl.name.toString)
             var cName = Type.Name(featureName.toString()+"_"+c.name.toString)
             featureMapper(featureName.toString()) =
               q"""class $cName {
@@ -169,11 +168,18 @@ object FeatureComposer {
       {
         s match {
           case c: Defn.Class => {
-            val pattern(pre, name) = c.name.toString()
-            var newName = Type.Name(name)
+            var newName : Type.Name = null
+            if (c.name.toString() != "Base_FeatureModel") {
+              val pattern(pre, name) = c.name.toString()
+              newName = Type.Name(name)
+            }
+            else newName = c.name
             var clStmts = c.templ.stats
             var cInits = c.templ.inits
-            stmts = q"class $newName extends ..$cInits {..$clStmts}" :: stmts
+            stmts =
+              q"""class $newName extends ..$cInits {
+                 ..$clStmts
+                 } """:: stmts
           }
           case _ => stmts = s :: stmts
         }

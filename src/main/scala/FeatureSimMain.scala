@@ -40,13 +40,14 @@ object FeatureSimMain extends App {
 
 */
   import FeatureComposer._
-  var fspec= FeatureSpec(
-                  FeatureTree(Base("base"), List(
-                       Feature("featureb"),
-                       Feature("featurec"))),
-                  ResolutionModel(scala.collection.mutable.Map[String,Boolean](
-                    "featureb" -> true,
-                    "featurec" -> true)))
+
+/*  var fspec= FeatureSpec(
+    FeatureTree(Base("base"), List(
+      Feature("featureb"),
+      Feature("featurec"))),
+    ResolutionModel(scala.collection.mutable.Map[String,Boolean](
+      "featureb" -> true,
+      "featurec" -> true)))
 
   val s = source"""
     import Collaboration._
@@ -106,13 +107,42 @@ object FeatureSimMain extends App {
       }
     }
   }"""
+*/
+  var fspec1= FeatureSpec(
+    FeatureTree(Base("base"), List(
+      Feature("patchWithGrass"))),
+    ResolutionModel(scala.collection.mutable.Map[String,Boolean](
+      "patchWithGrass" -> true)))
+
+val s1 = source"""
+                  import featuremodel.Collaboration._
+                 object FeatureModel1 {
+                   feature("base") {
+                   class MyPatch {
+
+      object PatchSetUp {
+                        def apply(): Unit = {
+                          println("A-A1")
+                        }
+}
+                    }
+                  }
+
+  feature("patchWithGrass") {
+                    trait MyPatch {
+                      object A1 {
+                        def apply(): Unit = {
+                          println("PatchWithGrass-A1")
+                        }
+                      }
+                    }
+                  }
+                 }
+  """
 
 
-
-
-
-  FeatureComposer(s)
-  var composite = reduce(merge(fspec))
+  FeatureComposer(s1)
+  var composite = reduce(merge(fspec1))
   println("Composed program")
   println("=================")
   println(composite)

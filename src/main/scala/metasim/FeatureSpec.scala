@@ -1,6 +1,5 @@
 package metasim
 
-import scala.meta.Defn
 
 abstract class FeatureExpression {var fname: String}
 case class And(name:String, children: List[FeatureExpression]) extends FeatureExpression {var fname = name}
@@ -32,11 +31,6 @@ object FeatureSpec {
       "F2"-> false,
       "F42"-> true
     )
-
-    val m = FeatureTree(Base("base"), List(
-      Feature("featureb"),
-      Feature("featurec")
-    ))
 
 
     featureModel = fm
