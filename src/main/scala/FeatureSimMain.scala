@@ -119,8 +119,7 @@ val s1 = source"""
                  object FeatureModel1 {
                    feature("base") {
                    class MyPatch {
-
-      object PatchSetUp {
+                      class PatchSetUp {
                         def apply(): Unit = {
                           println("A-A1")
                         }
@@ -128,9 +127,9 @@ val s1 = source"""
                     }
                   }
 
-  feature("patchWithGrass") {
+              feature("patchWithGrass") {
                     trait MyPatch {
-                      object A1 {
+                      class A1 {
                         def apply(): Unit = {
                           println("PatchWithGrass-A1")
                         }
