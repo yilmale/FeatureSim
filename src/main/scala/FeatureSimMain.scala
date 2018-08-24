@@ -40,73 +40,7 @@ object FeatureSimMain extends App {
 */
   import FeatureComposer._
 
-/*  var fspec= FeatureSpec(
-    FeatureTree(Base("base"), List(
-      Feature("featureb"),
-      Feature("featurec"))),
-    ResolutionModel(scala.collection.mutable.Map[String,Boolean](
-      "featureb" -> true,
-      "featurec" -> true)))
 
-  val s = source"""
-    import Collaboration._
-    object FeatureModel {
-     feature("base") {
-        class Graph {
-           var a1 : Int = 0
-           var a2 : Int = 1
-
-           def myPrint() : Int = {
-              var x = 5
-              x
-            }
-
-            def test1() : Int = {
-              var y = 10
-            }
-         }
-        class Node {
-           def test2() : Int = {
-              var y = 10
-            }
-        }
-
-        class Edge {
-          var e : Int = 15
-        }
-      }
-
-    feature("featureb") {
-      trait Graph {
-        def newGraphMethod() : Unit = {
-        }
-
-    }
-
-      trait Edge {
-        def newEdgeMethod() : Unit = {
-        }
-      }
-
-      trait Node { }
-
-      class Weight {
-        var w : Double = 0
-      }
-    }
-
-    feature("featurec") {
-      trait Node {
-        def newNodeMethod() : Unit = {
-        }
-      }
-
-      trait Weight {
-        def newWeightMethod() : Unit = {}
-      }
-    }
-  }"""
-*/
   var fspec1= FeatureSpec(
     FeatureTree(Base("base"), List(
       Xor("patchModel", List(
@@ -115,11 +49,12 @@ object FeatureSimMain extends App {
       ))),
     ResolutionModel(scala.collection.mutable.Map[String,Boolean](
       "patchWithGrass" -> false,
-              "patchWithNoGrass" -> false)))
+              "patchWithNoGrass" -> true)))
 
   val s1 = source"""
                  import featuremodel.Collaboration._
                  object FeatureModel {
+
                    feature("base") {
                      class MyPatch {
                         val posx : Int = 10
@@ -127,11 +62,11 @@ object FeatureSimMain extends App {
                     }
                    }
 
-                feature("patchModel")  {
+                   feature("patchModel")  {
 
-                }
+                   }
 
-                feature("patchWithGrass") {
+                   feature("patchWithGrass") {
                     trait MyPatch {
                       def generateCommand(): PatchSetUp = {
                         new PatchSetUp
@@ -169,9 +104,9 @@ object FeatureSimMain extends App {
                       }
                     }
                    }
-                }
+                  }
 
-                 feature("patchWithNoGrass") {
+                   feature("patchWithNoGrass") {
                       trait MyPatch {
                         def generateCommand(): PatchSetUp = {
                           new PatchSetUp
