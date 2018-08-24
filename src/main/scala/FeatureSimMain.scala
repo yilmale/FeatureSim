@@ -1,5 +1,4 @@
 import agent._
-import featuremodel._
 import visualization._
 import predation._
 import simulation._
@@ -110,34 +109,94 @@ object FeatureSimMain extends App {
 */
   var fspec1= FeatureSpec(
     FeatureTree(Base("base"), List(
-      Feature("patchWithGrass"))),
+      Xor("patchModel", List(
+        Feature("patchWithGrass"),
+        Feature("patchWithNoGrass"))
+      ))),
     ResolutionModel(scala.collection.mutable.Map[String,Boolean](
-      "patchWithGrass" -> true)))
+      "patchWithGrass" -> false,
+              "patchWithNoGrass" -> false)))
 
-val s1 = source"""
-                  import featuremodel.Collaboration._
-                 object FeatureModel1 {
+  val s1 = source"""
+                 import featuremodel.Collaboration._
+                 object FeatureModel {
                    feature("base") {
-                   class MyPatch {
-                      class PatchSetUp {
-                        def apply(): Unit = {
-                          println("A-A1")
-                        }
-}
+                     class MyPatch {
+                        val posx : Int = 10
+                        val posy : Int = 20
                     }
-                  }
+                   }
 
-              feature("patchWithGrass") {
+                feature("patchModel")  {
+
+                }
+
+                feature("patchWithGrass") {
                     trait MyPatch {
-                      class A1 {
-                        def apply(): Unit = {
-                          println("PatchWithGrass-A1")
-                        }
+                      def generateCommand(): PatchSetUp = {
+                        new PatchSetUp
+                      }
+
+                      class PatchSetUp extends Command with nvm.CustomAssembled {
+                         override def getSyntax = Syntax.commandSyntax(right = List(NumberType, CommandBlockType | OptionalType))
+                         def perform(args: Array[api.Argument], context: api.Context): Unit = {
+                            var pw = new PrintWriter(new File("/Users/yilmaz/IdeaProjects/example-scala/test.txt"))
+                            pw.println("Patch with grass set up")
+                            val world = context.getAgent.world.asInstanceOf[agent.World]
+                            val eContext = context.asInstanceOf[nvm.ExtensionContext]
+                            val nvmContext = eContext.nvmContext
+                            var patchColor: String = null
+                            val p: Patch = eContext.getAgent.asInstanceOf[Patch]
+                            val r = scala.util.Random
+                            var index = world.patchesOwnIndexOf("COUNTDOWN")
+                            var grt: Double = args(0).getDoubleValue
+                            if (r.nextDouble() <= 0.5) {
+                                world.patchChangedColorAt(p.id.asInstanceOf[Int], Color.argbToColor(Color.getRGBByName("green")))
+                                patchColor = "green"
+                                p.setVariable(index, grt.toLogoObject)
+                            }
+                            else {
+                                world.patchChangedColorAt(p.id.asInstanceOf[Int], Color.argbToColor(Color.getRGBByName("brown")))
+                                patchColor = "brown"
+                                p.setVariable(index, (r.nextDouble() * grt).toLogoObject)
+                             }
+                           pw.close()
+                      }
+
+                      def assemble(a: nvm.AssemblerAssistant) {
+                          a.block()
+                          a.done()
                       }
                     }
+                   }
+                }
+
+                 feature("patchWithNoGrass") {
+                      trait MyPatch {
+                        def generateCommand(): PatchSetUp = {
+                          new PatchSetUp
+                        }
+
+                        class PatchSetUp extends Command with nvm.CustomAssembled {
+                          override def getSyntax = Syntax.commandSyntax(right = List(NumberType, CommandBlockType | OptionalType))
+                          def perform(args: Array[api.Argument], context: api.Context): Unit = {
+                            var pw = new PrintWriter(new File("/Users/yilmaz/IdeaProjects/example-scala/test.txt"))
+                            pw.println("Patch with grass no grass set up")
+                            val world = context.getAgent.world.asInstanceOf[agent.World]
+                            val eContext = context.asInstanceOf[nvm.ExtensionContext]
+                            val nvmContext = eContext.nvmContext
+                            val p: Patch = eContext.getAgent.asInstanceOf[Patch]
+                            world.patchChangedColorAt(p.id.asInstanceOf[Int], Color.argbToColor(Color.getRGBByName("green")))
+                          }
+
+                          def assemble(a: nvm.AssemblerAssistant) {
+                             a.block()
+                             a.done()
+                          }
+                        }
+                      }
                   }
-                 }
-  """
+        }"""
 
 
   FeatureComposer(s1)
