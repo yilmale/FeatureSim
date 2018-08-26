@@ -2,33 +2,6 @@ package metasim
 
 import scala.meta._
 
-import featuremodel.Collaboration._
-object FeatureModel {
-  feature("base") {
-    class MyPatch {
-
-      object PatchSetUp {
-        def apply(): Unit = {
-          println("A-A1")
-        }
-      }
-    }
-  }
-
-  feature("patchWithGrass") {
-    trait MyPatch {
-      object PatchSetUp {
-        def apply(): Unit = {
-          println("PatchWithGrass-A1")
-        }
-      }
-    }
-  }
-}
-
-
-
-
 
 object FeatureComposer {
 

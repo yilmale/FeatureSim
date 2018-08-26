@@ -38,6 +38,8 @@ object FeatureSimMain extends App {
 
 
 */
+  FMTest()
+
   import FeatureComposer._
 
 
