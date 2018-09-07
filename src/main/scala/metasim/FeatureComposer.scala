@@ -4,6 +4,7 @@ import scala.meta._
 
 
 
+
 object FeatureComposer {
 
   var featureMapper = scala.collection.mutable.Map[String,List[Defn]]()
@@ -26,8 +27,28 @@ object FeatureComposer {
          }"""
     }
 
-    var baseCls = base collect {case c : Defn.Class => c}
-    var lftTrs = lifter collect {case t : Defn.Trait => t}
+
+    //var baseCls = base collect {case c : Defn.Class => c}
+    var baseCls = List[Defn.Class]()
+
+    base.templ.stats foreach { c =>
+      c  match {
+        case c : Defn.Class => baseCls = c :: baseCls
+        case _ =>
+      }
+    }
+
+    var lftTrs = List[Defn.Trait]()
+    //var lftTrs = lifter collect {case t : Defn.Trait => t}
+
+    lifter.templ.stats foreach {t =>
+      t match {
+        case t : Defn.Trait => lftTrs = t :: lftTrs
+        case _ =>
+      }
+    }
+
+
     var foundTrait : Defn.Trait = null
     var refinedCls = List[Defn.Class]()
 
@@ -48,17 +69,37 @@ object FeatureComposer {
         refinedCls = liftClass(b,foundTrait) :: refinedCls
       else
         refinedCls = b :: refinedCls
-    }
+
+     }
     }
 
-    var lftCls = lifter collect {case c : Defn.Class => c}
+    //var lftCls = lifter collect {case c : Defn.Class => c}
+    var lftCls = List[Defn.Class]()
+
+    lifter.templ.stats foreach { c =>
+      c  match {
+        case c : Defn.Class => lftCls = c :: lftCls
+        case _ =>
+      }
+    }
+
     refinedCls = refinedCls ::: lftCls
 
-    var baseTrs = base collect {case t : Defn.Trait => t}
+    //var baseTrs = base collect {case t : Defn.Trait => t}
+
+    var baseTrs = List[Defn.Trait]()
+
+    base.templ.stats foreach {t =>
+      t match {
+        case t : Defn.Trait => baseTrs = t :: baseTrs
+        case _ =>
+      }
+    }
 
     var compositeStmts : List[Defn] = (refinedCls ::: baseTrs) ::: lftTrs
 
     var featureName = Term.Name(lifter.name.toString() + "_" + base.name.toString())
+
 
     q"""
        object $featureName {
@@ -74,7 +115,6 @@ object FeatureComposer {
         d match {
           case c : Defn.Class => {
             var cStats = c.templ.stats
-            //var cName = Type.Name(featureName+"_"+cl.name.toString)
             var cName = Type.Name(featureName.toString()+"_"+c.name.toString)
             featureMapper(featureName.toString()) =
               q"""class $cName {
@@ -102,11 +142,25 @@ object FeatureComposer {
     objs foreach {o =>
     {
       featureMapper += (o.name.toString() -> List[Defn]())
-      var cls : List[Defn] = o collect {
+
+      var dfns = List[Defn]()
+      o.templ.stats foreach {s =>
+        s  match {
+          case c : Defn.Class => dfns = c :: dfns
+          case t : Defn.Trait => dfns = t :: dfns
+          case _ =>
+        }
+      }
+
+      /*var cls : List[Defn] = o collect {
         case cl: Defn.Class => cl
-        case tr : Defn.Trait => tr}
-      initializeFeature(cls,o.name)
-    }}
+        case tr : Defn.Trait => tr
+      }*/
+
+
+      initializeFeature(dfns,o.name)
+    }
+    }
   }
 
   def transform(f: Source): List[Defn.Object] = {
@@ -140,11 +194,18 @@ object FeatureComposer {
       {
         s match {
           case c: Defn.Class => {
-            val pattern(pre, name) = c.name.toString()
-            var newName = Type.Name(name)
+            var newName : Type.Name = null
+            if (c.name.toString() != "Base_FeatureModel") {
+              val pattern(pre, name) = c.name.toString()
+              newName = Type.Name(name)
+            }
+            else newName = c.name
             var clStmts = c.templ.stats
             var cInits = c.templ.inits
-            stmts = q"class $newName extends ..$cInits {..$clStmts}" :: stmts
+            stmts =
+              q"""class $newName extends ..$cInits {
+                 ..$clStmts
+                 } """:: stmts
           }
           case _ => stmts = s :: stmts
         }

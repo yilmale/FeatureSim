@@ -1,5 +1,4 @@
 import agent._
-import featuremodel._
 import visualization._
 import predation._
 import simulation._
@@ -11,6 +10,8 @@ import metasim._
 import coherence._
 import coherence.CoMod._
 import scala.meta._
+
+import scala.io.Source
 
 
 object FeatureSimMain extends App {
@@ -39,77 +40,34 @@ object FeatureSimMain extends App {
 
 
 */
+  //FMTest()
+
   import FeatureComposer._
-  var fspec= FeatureSpec(
-                  FeatureTree(Base("base"), List(
-                       Feature("featureb"),
-                       Feature("featurec"))),
-                  ResolutionModel(scala.collection.mutable.Map[String,Boolean](
-                    "featureb" -> true,
-                    "featurec" -> true)))
-
-  val s = source"""
-    import Collaboration._
-    object FeatureModel {
-     feature("base") {
-        class Graph {
-           var a1 : Int = 0
-           var a2 : Int = 1
-
-           def myPrint() : Int = {
-              var x = 5
-              x
-            }
-
-            def test1() : Int = {
-              var y = 10
-            }
-         }
-        class Node {
-           def test2() : Int = {
-              var y = 10
-            }
-        }
-
-        class Edge {
-          var e : Int = 15
-        }
-      }
-
-    feature("featureb") {
-      trait Graph {
-        def newGraphMethod() : Unit = {
-        }
-
-    }
-
-      trait Edge {
-        def newEdgeMethod() : Unit = {
-        }
-      }
-
-      trait Node { }
-
-      class Weight {
-        var w : Double = 0
-      }
-    }
-
-    feature("featurec") {
-      trait Node {
-        def newNodeMethod() : Unit = {
-        }
-      }
-
-      trait Weight {
-        def newWeightMethod() : Unit = {}
-      }
-    }
-  }"""
 
 
-  FeatureComposer(s)
-  var composite = reduce(merge(fspec))
+  var fspec1= FeatureSpec(
+    FeatureTree(Base("base"), List(
+      And("agentModel", List(
+        Feature("preyModel"),
+        Feature("predModel")
+      )),
+      Xor("patchModel", List(
+        Feature("patchWithGrass"),
+        Feature("patchWithNoGrass"))
+      ))),
+    ResolutionModel(scala.collection.mutable.Map[String,Boolean](
+      "patchWithGrass" -> false,
+              "patchWithNoGrass" -> true)))
+
+
+  var inp : String = ""
+  scala.io.Source.fromFile(
+    "/Users/yilmaz/IdeaProjects/FeatureSim/src/main/scala/metasim/SourceInput.scala") foreach {x =>
+     inp = inp + x
+  }
+
+  FeatureComposer(inp.parse[scala.meta.Source].get)
+  var composite = reduce(merge(fspec1))
   println("Composed program")
   println("=================")
   println(composite)
