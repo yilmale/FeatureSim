@@ -5,7 +5,6 @@ import org.nlogo.core.Syntax
 import org.nlogo.core.Syntax.{ListType, NumberType, CommandBlockType, OptionalType,RepeatableType, WildcardType}
 import org.nlogo.{agent, api, core, nvm}
 import org.nlogo.api._
-import org.nlogo.core.AgentKind
 import java.io._
 
 import Collaboration._
@@ -30,7 +29,6 @@ object FeatureModel {
 
     trait MyPrey {
       def move()(implicit context: api.Context, r : scala.util.Random, t: agent.Turtle): Unit = {
-        val eContext = context.asInstanceOf[nvm.ExtensionContext]
         val world = context.getAgent.world.asInstanceOf[agent.World]
         t.heading((t.heading + (r.nextDouble()*50)) - (r.nextDouble()*50))
         t.jump(1.0)
@@ -62,7 +60,6 @@ object FeatureModel {
 
       def consume(e: Double)(implicit context: api.Context, t: agent.Turtle) : Unit  = {
         val world = context.getAgent.world.asInstanceOf[agent.World]
-        val eContext = context.asInstanceOf[nvm.ExtensionContext]
         var index = world.turtlesOwnIndexOf("ENERGY")
         var p = t.getPatchHere
         if (p.pcolor==Color.argbToColor(Color.getRGBByName("green"))) {
@@ -75,10 +72,7 @@ object FeatureModel {
 
     trait MyPred {
       def move()(implicit context: api.Context, r: scala.util.Random, t: agent.Turtle): Unit = {
-        val eContext = context.asInstanceOf[nvm.ExtensionContext]
         val world = context.getAgent.world.asInstanceOf[agent.World]
-        var t = eContext.getAgent.asInstanceOf[org.nlogo.agent.Turtle]
-        val r = scala.util.Random
         t.heading((t.heading + (r.nextDouble() * 50)) - (r.nextDouble() * 50))
         t.jump(1.0)
 
@@ -101,7 +95,6 @@ object FeatureModel {
       }
 
       def death()(implicit context: api.Context, t: agent.Turtle): Unit = {
-        val eContext = context.asInstanceOf[nvm.ExtensionContext]
         val world = context.getAgent.world.asInstanceOf[agent.World]
         var index = world.turtlesOwnIndexOf("ENERGY")
         if (t.getVariable(index).asInstanceOf[Double] < 0) t.die()
