@@ -40,12 +40,10 @@ object FeatureSimMain extends App {
 
 
 */
-  //FMTest()
-
-  import FeatureComposer._
 
 
-  var fspec1= FeatureSpec(
+
+  var fs= FeatureSpec(
     FeatureTree(Base("base"), List(
       And("agentModel", List(
         Feature("preyModel"),
@@ -56,18 +54,18 @@ object FeatureSimMain extends App {
         Feature("patchWithNoGrass"))
       ))),
     ResolutionModel(scala.collection.mutable.Map[String,Boolean](
-      "patchWithGrass" -> false,
-              "patchWithNoGrass" -> true)))
+      "patchWithGrass" -> true,
+              "patchWithNoGrass" -> false)))
 
 
-  var inp : String = ""
+  var features : String = ""
   scala.io.Source.fromFile(
-    "/Users/yilmaz/IdeaProjects/FeatureSim/src/main/scala/metasim/SourceInput.scala") foreach {x =>
-     inp = inp + x
+    "/Users/yilmaz/IdeaProjects/FeatureSim/src/main/scala/" +
+      "metasim/SourceInput.scala") foreach {x =>
+     features = features + x
   }
 
-  FeatureComposer(inp.parse[scala.meta.Source].get)
-  var composite = reduce(merge(fspec1))
+  var composite = FeatureComposer(features.parse[scala.meta.Source].get,fs)
   println("Composed program")
   println("=================")
   println(composite)

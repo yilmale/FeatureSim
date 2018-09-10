@@ -211,8 +211,12 @@ object FeatureModel {
 
   feature("patchWithGrass") {
     trait MyPatch {
-      def generateCommand(): PatchSetUp = {
+      def generateCommandSetUp(): PatchSetUp = {
         new PatchSetUp
+      }
+
+      def generateCommandGrow(): GrassGrow = {
+        new GrassGrow
       }
 
       class PatchSetUp extends Command with nvm.CustomAssembled {
@@ -221,22 +225,31 @@ object FeatureModel {
           var pw = new PrintWriter(new File("/Users/yilmaz/IdeaProjects/example-scala/test.txt"))
           pw.println("Patch with grass set up")
           val world = context.getAgent.world.asInstanceOf[agent.World]
+
           val eContext = context.asInstanceOf[nvm.ExtensionContext]
           val nvmContext = eContext.nvmContext
           var patchColor: String = null
           val p: Patch = eContext.getAgent.asInstanceOf[Patch]
+          for (x <- AgentVariables.getImplicitPatchVariables(false)) pw.println(x)
           val r = scala.util.Random
           var index = world.patchesOwnIndexOf("COUNTDOWN")
+
           var grt: Double = args(0).getDoubleValue
           if (r.nextDouble() <= 0.5) {
-            world.patchChangedColorAt(p.id.asInstanceOf[Int], Color.argbToColor(Color.getRGBByName("green")))
+            pw.println("Patch color was " + p.getVariable(2))
+            p.setVariable(2, Color.argbToColor(Color.getRGBByName("green")))
+            pw.println("Patch color is now " + p.getVariable(2))
             patchColor = "green"
             p.setVariable(index, grt.toLogoObject)
+            pw.println("Grass growth time is " + p.getVariable(index))
           }
           else {
-            world.patchChangedColorAt(p.id.asInstanceOf[Int], Color.argbToColor(Color.getRGBByName("brown")))
+            pw.println("Patch color was " + p.pcolor)
+            p.setVariable(2, Color.argbToColor(Color.getRGBByName("brown")))
+            pw.println("Patch color is now " + p.pcolor)
             patchColor = "brown"
             p.setVariable(index, (r.nextDouble() * grt).toLogoObject)
+            pw.println("Grass growth time is " + p.getVariable(index))
           }
           pw.close()
         }
@@ -246,6 +259,36 @@ object FeatureModel {
           a.done()
         }
       }
+
+
+      class GrassGrow extends Command with nvm.CustomAssembled {
+        override def getSyntax = Syntax.commandSyntax(right = List(NumberType, CommandBlockType | OptionalType))
+
+        def perform(args: Array[api.Argument], context: api.Context): Unit = {
+          val eContext = context.asInstanceOf[nvm.ExtensionContext]
+          val world = context.getAgent.world.asInstanceOf[agent.World]
+          val nvmContext = eContext.nvmContext
+          val p: Patch = eContext.getAgent.asInstanceOf[Patch]
+          if (p.pcolor==Color.argbToColor(Color.getRGBByName("brown"))) {
+            var index = world.patchesOwnIndexOf("COUNTDOWN")
+            if (p.getVariable(index).asInstanceOf[Double] <= 0) {
+              p.setVariable(2, Color.argbToColor(Color.getRGBByName("green")))
+              var grt: Double = args(0).getDoubleValue
+              p.setVariable(index, grt.toLogoObject)
+            }
+            else
+              p.setVariable(index,(p.getVariable(index).asInstanceOf[Double]-1).toLogoObject)
+          }
+
+        }
+
+        def assemble(a: nvm.AssemblerAssistant): Unit = {
+          a.block()
+          a.done()
+        }
+      }
+
+
     }
   }
 
@@ -275,3 +318,4 @@ object FeatureModel {
     }
   }
 }
+
