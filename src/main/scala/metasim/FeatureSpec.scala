@@ -12,27 +12,14 @@ case class FeatureTree(node: FeatureExpression,
                        children: List[FeatureExpression] = List[FeatureExpression]())
 case class ResolutionModel(rm: scala.collection.mutable.Map[String,Boolean])
 
+
+
 object FeatureSpec {
   type RM = scala.collection.mutable.Map[String,Boolean]
   var composite : String = ""
   var featureModel : FeatureTree = null
   var resolution: RM = null
   def apply(fm: FeatureTree,res: ResolutionModel): Array[String] = {
-    val n = FeatureTree(Base("F"),List(
-      And("F0",List(Feature("F01"),Feature("F02"))),
-      Or("F1",List(Feature("F11"),Feature("F12"))),
-      Optional("F2", List(Feature("F2"))),
-      Feature("F3"),
-      Xor("F4",List(Feature("F41"),Feature("F42")))
-    ))
-    var rmodel = scala.collection.mutable.Map[String,Boolean](
-      "F11"->true,
-      "F12"->false,
-      "F2"-> false,
-      "F42"-> true
-    )
-
-
     featureModel = fm
     resolution = res.rm
     compile()
