@@ -62,7 +62,8 @@ object FeatureSimMain extends App {
 
   var inp : String = ""
   scala.io.Source.fromFile(
-    "/Users/yilmaz/IdeaProjects/FeatureSim/src/main/scala/metasim/SourceInput.scala") foreach {x =>
+    "/Users/yilmaz/IdeaProjects/FeatureSim/src/main/scala/" +
+      "metasim/SourceInput.scala") foreach {x =>
      inp = inp + x
   }
 
