@@ -222,36 +222,29 @@ object FeatureModel {
       class PatchSetUp extends Command with nvm.CustomAssembled {
         override def getSyntax = Syntax.commandSyntax(right = List(NumberType, CommandBlockType | OptionalType))
         def perform(args: Array[api.Argument], context: api.Context): Unit = {
-          var pw = new PrintWriter(new File("/Users/yilmaz/IdeaProjects/example-scala/test.txt"))
-          pw.println("Patch with grass set up")
+          //var pw = new PrintWriter(new File("/Users/yilmaz/IdeaProjects/example-scala/test.txt"))
+          //pw.println("Patch with grass set up")
           val world = context.getAgent.world.asInstanceOf[agent.World]
 
           val eContext = context.asInstanceOf[nvm.ExtensionContext]
           val nvmContext = eContext.nvmContext
           var patchColor: String = null
           val p: Patch = eContext.getAgent.asInstanceOf[Patch]
-          for (x <- AgentVariables.getImplicitPatchVariables(false)) pw.println(x)
           val r = scala.util.Random
           var index = world.patchesOwnIndexOf("COUNTDOWN")
 
           var grt: Double = args(0).getDoubleValue
           if (r.nextDouble() <= 0.5) {
-            pw.println("Patch color was " + p.getVariable(2))
             p.setVariable(2, Color.argbToColor(Color.getRGBByName("green")))
-            pw.println("Patch color is now " + p.getVariable(2))
             patchColor = "green"
             p.setVariable(index, grt.toLogoObject)
-            pw.println("Grass growth time is " + p.getVariable(index))
           }
           else {
-            pw.println("Patch color was " + p.pcolor)
             p.setVariable(2, Color.argbToColor(Color.getRGBByName("brown")))
-            pw.println("Patch color is now " + p.pcolor)
             patchColor = "brown"
             p.setVariable(index, (r.nextDouble() * grt).toLogoObject)
-            pw.println("Grass growth time is " + p.getVariable(index))
           }
-          pw.close()
+          //pw.close()
         }
 
         def assemble(a: nvm.AssemblerAssistant) {
@@ -301,8 +294,6 @@ object FeatureModel {
       class PatchSetUp extends Command with nvm.CustomAssembled {
         override def getSyntax = Syntax.commandSyntax(right = List(NumberType, CommandBlockType | OptionalType))
         def perform(args: Array[api.Argument], context: api.Context): Unit = {
-          var pw = new PrintWriter(new File("/Users/yilmaz/IdeaProjects/example-scala/test.txt"))
-          pw.println("Patch with grass no grass set up")
           val world = context.getAgent.world.asInstanceOf[agent.World]
           val eContext = context.asInstanceOf[nvm.ExtensionContext]
           val nvmContext = eContext.nvmContext
