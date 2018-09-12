@@ -1,5 +1,7 @@
 package metasim
 
+import scala.meta._
+
 
 abstract class FeatureExpression {var fname: String}
 case class And(name:String, children: List[FeatureExpression]) extends FeatureExpression {var fname = name}
@@ -13,8 +15,34 @@ case class FeatureTree(node: FeatureExpression,
 case class ResolutionModel(rm: scala.collection.mutable.Map[String,Boolean])
 
 
+object SourceManager {
+  def apply(fileName: String): scala.meta.Source = {
+    var features : String = ""
+    scala.io.Source.fromFile(fileName) foreach {x =>
+      features = features + x
+    }
+    features.parse[scala.meta.Source].get
+  }
+}
 
-object FeatureSpec {
+
+abstract class VariabilityModel {
+  var features : scala.meta.Source
+  var featureTree : FeatureTree
+  var resolution : ResolutionModel
+}
+
+object VariabilityModel {
+  def apply(x: scala.meta.Source)(y: FeatureTree)(z: ResolutionModel): VariabilityModel = {
+    new VariabilityModel {
+      override var features: Source = x
+      override var featureTree: FeatureTree = y
+      override var resolution: ResolutionModel = z
+    }
+  }
+}
+
+object FeatureTreeEvaluator {
   type RM = scala.collection.mutable.Map[String,Boolean]
   var composite : String = ""
   var featureModel : FeatureTree = null

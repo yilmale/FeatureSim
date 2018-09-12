@@ -14,8 +14,10 @@ import scala.meta._
 import scala.io.Source
 
 
-object FeatureSimMain extends App {
 
+
+
+object FeatureSimMain extends App {
 
 
  /*
@@ -42,8 +44,24 @@ object FeatureSimMain extends App {
 */
 
 
+  new VariabilityModel {
+    var features = SourceManager("/Users/yilmaz/IdeaProjects/FeatureSim/" +
+      "src/main/scala/metasim/SourceInput.scala")
+    var featureTree : FeatureTree= FeatureTree(Base("base"), List(
+      And("agentModel", List(
+        Feature("preyModel"),
+        Feature("predModel")
+      )),
+      Xor("patchModel", List(
+        Feature("patchWithGrass"),
+        Feature("patchWithNoGrass"))
+      )))
+    var resolution : ResolutionModel = ResolutionModel(scala.collection.mutable.Map[String,Boolean](
+      "patchWithGrass" -> true,
+      "patchWithNoGrass" -> false))
+  }
 
-  var fs= FeatureSpec(
+  var fs= FeatureTreeEvaluator(
     FeatureTree(Base("base"), List(
       And("agentModel", List(
         Feature("preyModel"),
@@ -58,14 +76,9 @@ object FeatureSimMain extends App {
               "patchWithNoGrass" -> false)))
 
 
-  var features : String = ""
-  scala.io.Source.fromFile(
-    "/Users/yilmaz/IdeaProjects/FeatureSim/src/main/scala/" +
-      "metasim/SourceInput.scala") foreach {x =>
-     features = features + x
-  }
-
-  var composite = FeatureComposer(features.parse[scala.meta.Source].get,fs)
+  var composite = FeatureComposer(
+    SourceManager("/Users/yilmaz/IdeaProjects/FeatureSim/src/main/scala/metasim/SourceInput.scala"),
+    fs)
   println("Composed program")
   println("=================")
   println(composite)
