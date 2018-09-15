@@ -1,6 +1,7 @@
 package metasim
 
 import scala.meta._
+import java.io._
 
 
 abstract class FeatureExpression {var fname: String}
@@ -15,7 +16,7 @@ case class FeatureTree(node: FeatureExpression,
 case class ResolutionModel(rm: scala.collection.mutable.Map[String,Boolean])
 
 
-object SourceManager {
+object FeatureSpecifications {
   def apply(fileName: String): scala.meta.Source = {
     var features : String = ""
     scala.io.Source.fromFile(fileName) foreach {x =>
@@ -30,6 +31,20 @@ abstract class VariabilityModel {
   var features : scala.meta.Source
   var featureTree : FeatureTree
   var resolution : ResolutionModel
+  def compile() : Defn.Object = {
+    val fs = FeatureTreeEvaluator(featureTree,resolution)
+    FeatureComposer(features,fs)
+  }
+
+  def compile(fileName: String): Defn.Object = {
+    val fs = FeatureTreeEvaluator(featureTree,resolution)
+    var composite = FeatureComposer(features,fs)
+    val writer = new PrintWriter(new File(fileName))
+
+    writer.write(composite.toString())
+    writer.close()
+    composite
+  }
 }
 
 object VariabilityModel {
@@ -38,6 +53,7 @@ object VariabilityModel {
       override var features: Source = x
       override var featureTree: FeatureTree = y
       override var resolution: ResolutionModel = z
+
     }
   }
 }

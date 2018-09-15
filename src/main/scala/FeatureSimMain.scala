@@ -44,10 +44,13 @@ object FeatureSimMain extends App {
 */
 
 
-  new VariabilityModel {
-    var features = SourceManager("/Users/yilmaz/IdeaProjects/FeatureSim/" +
+  var transformedModel = VariabilityModel
+    {
+      FeatureSpecifications("/Users/yilmaz/IdeaProjects/FeatureSim/" +
       "src/main/scala/metasim/SourceInput.scala")
-    var featureTree : FeatureTree= FeatureTree(Base("base"), List(
+    }
+    {
+      FeatureTree(Base("base"), List(
       And("agentModel", List(
         Feature("preyModel"),
         Feature("predModel")
@@ -56,32 +59,16 @@ object FeatureSimMain extends App {
         Feature("patchWithGrass"),
         Feature("patchWithNoGrass"))
       )))
-    var resolution : ResolutionModel = ResolutionModel(scala.collection.mutable.Map[String,Boolean](
+    }
+    {
+      ResolutionModel(scala.collection.mutable.Map[String, Boolean](
       "patchWithGrass" -> true,
       "patchWithNoGrass" -> false))
-  }
+    } compile("out.txt")
 
-  var fs= FeatureTreeEvaluator(
-    FeatureTree(Base("base"), List(
-      And("agentModel", List(
-        Feature("preyModel"),
-        Feature("predModel")
-      )),
-      Xor("patchModel", List(
-        Feature("patchWithGrass"),
-        Feature("patchWithNoGrass"))
-      ))),
-    ResolutionModel(scala.collection.mutable.Map[String,Boolean](
-      "patchWithGrass" -> true,
-              "patchWithNoGrass" -> false)))
+  println(transformedModel)
 
 
-  var composite = FeatureComposer(
-    SourceManager("/Users/yilmaz/IdeaProjects/FeatureSim/src/main/scala/metasim/SourceInput.scala"),
-    fs)
-  println("Composed program")
-  println("=================")
-  println(composite)
 
 
   //var i = new InferenceTest()

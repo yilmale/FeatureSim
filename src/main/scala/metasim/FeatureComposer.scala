@@ -4,7 +4,6 @@ import scala.meta._
 
 
 
-
 object FeatureComposer {
 
   var featureMapper = scala.collection.mutable.Map[String,List[Defn]]()
