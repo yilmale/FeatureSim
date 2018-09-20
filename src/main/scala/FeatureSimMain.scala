@@ -13,6 +13,8 @@ import scala.meta._
 
 import scala.io.Source
 
+import sys.process._
+
 
 
 
@@ -43,6 +45,9 @@ object FeatureSimMain extends App {
 
 */
 
+
+  val result = (sys.process.Process("ls -al") !!)
+  println(result)
 
   var transformedModel = VariabilityModel
     {
