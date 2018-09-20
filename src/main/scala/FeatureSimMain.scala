@@ -45,9 +45,17 @@ object FeatureSimMain extends App {
 
 */
 
-
-  val result = (sys.process.Process("ls -al") !!)
+  var cmd : String = "ls -al"
+  var result = (sys.process.Process(cmd) !!)
   println(result)
+  println("Sequence command")
+  Seq("ls -al","ls -al") foreach { x => {
+    result = (sys.process.Process(x) !!)
+    println(result)
+  }
+  }
+
+
 
   var transformedModel = VariabilityModel
     {
