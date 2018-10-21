@@ -13,6 +13,8 @@ import scala.meta._
 
 import scala.io.Source
 
+import sys.process._
+
 
 
 
@@ -42,6 +44,17 @@ object FeatureSimMain extends App {
 
 
 */
+
+  var cmd : String = "ls -al"
+  var result = (sys.process.Process(cmd) !!)
+  println(result)
+  println("Sequence command")
+  Seq("ls -al","ls -al") foreach { x => {
+    result = (sys.process.Process(x) !!)
+    println(result)
+  }
+  }
+
 
 
   var transformedModel = VariabilityModel
