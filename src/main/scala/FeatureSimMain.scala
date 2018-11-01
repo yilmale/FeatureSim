@@ -45,6 +45,7 @@ object FeatureSimMain extends App {
 
 */
 
+
   var cmd : String = "ls -al"
   var result = (sys.process.Process(cmd) !!)
   println(result)
