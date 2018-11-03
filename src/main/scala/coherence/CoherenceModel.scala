@@ -5,6 +5,32 @@ object CoMod {
   var coModel : CoherenceModel = null
   type DATA = (String, String, Double)
 
+  def constraintGen(e: Constraint,exp: String, target: String): List[Constraint] = {
+    coModel.CG(coModel.P(target)) = e :: coModel.CG(coModel.P(target))
+    coModel.CG(coModel.P(exp)) = e :: coModel.CG(coModel.P(exp))
+    coModel.C = e :: coModel.C
+    List(e)
+  }
+
+  def composePairs(L: List[String]): List[(String,String)] = {
+    def compose(f: String, R: List[String]): List[(String,String)] = {
+      val PL = for (x <- R) yield (f,x)
+      PL
+    }
+
+    var S : List[(String,String)] = List()
+    var T = L
+    if (T.length >= 2) {
+      while (T.tail.isEmpty == false) {
+        val a = T.head
+        S = S ++ compose(a,T.tail)
+        T = T.tail
+      }
+    }
+    S
+  }
+
+
 
   def explain(exp: String, target: String, w: Double=0.05): List[Constraint] = {
     val e = new Explanation {
@@ -12,10 +38,7 @@ object CoMod {
       explanan = coModel.P(exp)
       weight = w
     }
-
-    coModel.CG(coModel.P(target)) = e :: coModel.CG(coModel.P(target))
-    coModel.CG(coModel.P(exp)) = e :: coModel.CG(coModel.P(exp))
-    List(e)
+   constraintGen(e,exp,target)
   }
 
 
@@ -25,9 +48,7 @@ object CoMod {
       explanan = coModel.P(exp)
       weight = w
     }
-    coModel.CG(coModel.P(target)) = e :: coModel.CG(coModel.P(target))
-    coModel.CG(coModel.P(exp)) = e :: coModel.CG(coModel.P(exp))
-    List(e)
+    constraintGen(e,exp,target)
   }
 
   def incompatible(exp: String, target: String, w: Double=(-0.2)): List[Constraint] = {
@@ -36,9 +57,7 @@ object CoMod {
       premise = coModel.P(exp)
       weight = w
     }
-    coModel.CG(coModel.P(target)) = e :: coModel.CG(coModel.P(target))
-    coModel.CG(coModel.P(exp)) = e :: coModel.CG(coModel.P(exp))
-    List(e)
+    constraintGen(e,exp,target)
   }
 
   def conflict(act1: String, act2: String, w: Double=(-0.2)): List[Constraint] = {
@@ -47,30 +66,11 @@ object CoMod {
       action = coModel.P(act1)
       weight = w
     }
-    coModel.CG(coModel.P(act1)) = e :: coModel.CG(coModel.P(act1))
-    coModel.CG(coModel.P(act2)) = e :: coModel.CG(coModel.P(act2))
-    List(e)
+    constraintGen(e,act1,act2)
   }
 
 
   def explain(exp: List[String], target: String, w: Double): List[Constraint] = {
-    def composePairs(L: List[String]): List[(String,String)] = {
-      def compose(f: String, R: List[String]): List[(String,String)] = {
-        val PL = for (x <- R) yield (f,x)
-        PL
-      }
-
-      var S : List[(String,String)] = List()
-      var T = L
-      if (T.length >= 2) {
-        while (T.tail.isEmpty == false) {
-          val a = T.head
-          S = S ++ compose(a,T.tail)
-          T = T.tail
-        }
-      }
-      S
-    }
 
     var cl : List[Constraint] = List()
 
@@ -106,29 +106,10 @@ object CoMod {
       weight = w
     }
 
-    coModel.CG(coModel.P(target)) = e :: coModel.CG(coModel.P(target))
-    coModel.CG(coModel.P(exp)) = e :: coModel.CG(coModel.P(exp))
-    List(e)
+    constraintGen(e,exp,target)
   }
 
   def deduce(exp: List[String], target: String, w: Double): List[Constraint] = {
-    def composePairs(L: List[String]): List[(String,String)] = {
-      def compose(f: String, R: List[String]): List[(String,String)] = {
-        val PL = for (x <- R) yield (f,x)
-        PL
-      }
-
-      var S : List[(String,String)] = List()
-      var T = L
-      if (T.length >= 2) {
-        while (T.tail.isEmpty == false) {
-          val a = T.head
-          S = S ++ compose(a,T.tail)
-          T = T.tail
-        }
-      }
-      S
-    }
 
     var cl : List[Constraint] = List()
 
@@ -164,29 +145,10 @@ object CoMod {
       weight = w
     }
 
-    coModel.CG(coModel.P(g)) = e :: coModel.CG(coModel.P(g))
-    coModel.CG(coModel.P(a)) = e :: coModel.CG(coModel.P(a))
-    List(e)
+    constraintGen(e,a,g)
   }
 
   def facilitate(a: List[String], g: String, w: Double): List[Constraint] = {
-    def composePairs(L: List[String]): List[(String,String)] = {
-      def compose(f: String, R: List[String]): List[(String,String)] = {
-        val PL = for (x <- R) yield (f,x)
-        PL
-      }
-
-      var S : List[(String,String)] = List()
-      var T = L
-      if (T.length >= 2) {
-        while (T.tail.isEmpty == false) {
-          val a = T.head
-          S = S ++ compose(a,T.tail)
-          T = T.tail
-        }
-      }
-      S
-    }
 
     var cl : List[Constraint] = List()
 
@@ -218,39 +180,33 @@ object CoMod {
   def data(data: DATA*): Unit = {
 
     for (d <- data) {
-      coModel.P += (d._1 -> new Data() {
-        id = d._1
-        explanation = d._2
-        activation = d._3
-      })
+      coModel.P += (d._1 -> new Data(d._1,d._2,d._3))
       coModel.CG += (coModel.P(d._1) -> List[Constraint]())
     }
   }
 
+  def context(ident: String, expl: String, act: Double=0.01): Unit = {
+    coModel.P += (ident -> new Context(ident,expl,act))
+    coModel.CG += (coModel.P(ident) -> List[Constraint]())
+  }
+
   def belief(ident: String, expl: String, act: Double=0.01): Unit = {
-    coModel.P += (ident -> new Belief() {
-      id = ident
-      explanation = expl
-      activation = act
-    })
+    coModel.P += (ident -> new Belief(ident,expl,act))
+    coModel.CG += (coModel.P(ident) -> List[Constraint]())
+  }
+
+  def feature(ident: String, expl: String, act: Double=0.01): Unit = {
+    coModel.P += (ident -> new Feature(ident,expl,act))
     coModel.CG += (coModel.P(ident) -> List[Constraint]())
   }
 
   def goal(ident: String, expl: String, act: Double=0.01): Unit = {
-    coModel.P += (ident -> new Goal() {
-      id = ident
-      explanation = expl
-      activation = act
-    })
+    coModel.P += (ident -> new Goal(ident,expl,act))
     coModel.CG += (coModel.P(ident) -> List[Constraint]())
   }
 
   def activity(ident: String, expl: String, act: Double=0.01): Unit = {
-    coModel.P += (ident -> new Action() {
-      id = ident
-      explanation = expl
-      activation = act
-    })
+    coModel.P += (ident -> new Action(ident,expl,act))
     coModel.CG += (coModel.P(ident) -> List[Constraint]())
   }
 
@@ -282,7 +238,7 @@ class CoherenceModel { self =>
     }
   }
 
-  def evaluate(): Unit = {
+  def evaluate(): CoherenceModel = {
     var activations= scala.collection.mutable.Map[Proposition,Double]()
     var netFlow = scala.collection.mutable.Map[Proposition,Double]()
     for (p <- P values) {
@@ -316,6 +272,7 @@ class CoherenceModel { self =>
       }
       iteration = iteration+1
     } while ((maxDiff > threshold) && (iteration <= maxIteration))
+    this
   }
 
   def evaluate_Asynch() {

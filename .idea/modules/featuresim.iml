@@ -47,5 +47,6 @@
     <orderEntry type="library" name="sbt: com.lihaoyi:fansi_2.12:0.2.5:jar" level="project" />
     <orderEntry type="library" name="netlogo-6.0.3" level="project" />
     <orderEntry type="library" name="netlogo-mac-app" level="project" />
+    <orderEntry type="library" name="jgraphx" level="project" />
   </component>
 </module>

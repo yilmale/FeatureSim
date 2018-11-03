@@ -1,9 +1,9 @@
 package coherence
 
 abstract class Proposition {
-  var id : String = ""
-  var explanation : String = ""
-  var activation : Double = 0
+  var id : String
+  var explanation : String
+  var activation : Double
 
   def getNeighbor(c: Constraint): Proposition = {
     c match {
@@ -14,18 +14,38 @@ abstract class Proposition {
   }
 }
 
-class Data extends Proposition {
-
+class Data(dataId: String, expl: String, act: Double) extends Proposition {
+var id = dataId
+var explanation = expl
+var activation = act
 }
 
-class Belief extends Proposition {
-
+class Feature(fid: String, expl: String, act: Double) extends Proposition {
+  var id = fid
+  var explanation = expl
+  var activation = act
 }
 
-class Goal extends Proposition {
-
+class Belief(bid: String, expl: String, act: Double) extends Proposition {
+  var id = bid
+  var explanation = expl
+  var activation = act
 }
 
-class Action extends Proposition {
+class Context(cid: String, expl: String, act: Double) extends Proposition {
+  var id = cid
+  var explanation = expl
+  var activation = act
+}
 
+class Goal(gid: String, expl: String, act: Double) extends Proposition {
+  var id = gid
+  var explanation = expl
+  var activation = act
+}
+
+class Action(aid: String, expl: String, act: Double) extends Proposition {
+  var id = aid
+  var explanation = expl
+  var activation = act
 }

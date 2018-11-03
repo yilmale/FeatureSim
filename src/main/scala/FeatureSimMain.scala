@@ -9,11 +9,13 @@ import scala.util.Random
 import metasim._
 import coherence._
 import coherence.CoMod._
+import javax.swing.JFrame
+
 import scala.meta._
-
 import scala.io.Source
-
 import sys.process._
+
+import visualization._
 
 
 
@@ -43,7 +45,38 @@ object FeatureSimMain extends App {
   println(cm)
 
 
+
 */
+
+  /*var frame = new GraphVis()
+  frame.setDefaultCloseOperation(3)
+  frame.setSize(400,320)
+  frame.setVisible(true)*/
+
+  var cm = CoherenceModel {
+    context("spatial", "Context Information", 1.0)
+    feature("base", "Base Model")
+    feature("agentModel", "Prey-Predator")
+    feature("preyModel", "Prey Protocol")
+    feature("predModel", "Predator Protocol")
+    feature("patchModel", "Environment")
+    feature("patchWithGrass","Environment with Grass")
+    feature("patchWithNoGrass", "Environment without Grass")
+  } subjectTo (
+    facilitate("agentModel","base",1.0),
+    facilitate("patchModel","base", 1.0),
+    facilitate( List("preyModel","predModel"), "agentModel",1.0),
+    facilitate("patchWithGrass","spatial", 1.0),
+    facilitate("patchWithGrass","patchModel"),
+    facilitate("patchWithNoGrass","patchModel"),
+    conflict("patchWithGrass", "patchWithNoGrass")
+  ) evaluate()
+
+
+  var fg = new FeatureGraphVis(cm)
+  fg.setDefaultCloseOperation(3)
+  fg.setSize(800,800)
+  fg.setVisible(true)
 
 
   var cmd : String = "ls -al"
