@@ -1,6 +1,7 @@
 package coherence
 
 
+
 object CoMod {
   var coModel : CoherenceModel = null
   type DATA = (String, String, Double)
@@ -82,6 +83,7 @@ object CoMod {
       }
       coModel.CG(coModel.P(target)) = e :: coModel.CG(coModel.P(target))
       coModel.CG(coModel.P(s)) = e :: coModel.CG(coModel.P(s))
+      coModel.C = e :: coModel.C
       cl = e :: cl
     }
 
@@ -121,6 +123,7 @@ object CoMod {
       }
       coModel.CG(coModel.P(target)) = e :: coModel.CG(coModel.P(target))
       coModel.CG(coModel.P(s)) = e :: coModel.CG(coModel.P(s))
+      coModel.C = e :: coModel.C
       cl = e :: cl
     }
 
@@ -160,6 +163,7 @@ object CoMod {
       }
       coModel.CG(coModel.P(g)) = e :: coModel.CG(coModel.P(g))
       coModel.CG(coModel.P(s)) = e :: coModel.CG(coModel.P(s))
+      coModel.C = e :: coModel.C
       cl = e :: cl
     }
 
@@ -212,7 +216,7 @@ object CoMod {
 
 }
 
-object CoherenceModel {
+object FeatureCoherenceModel {
   def apply(block: => Unit): CoherenceModel = {
     new CoherenceModel {
       block
@@ -222,6 +226,7 @@ object CoherenceModel {
 
 
 class CoherenceModel { self =>
+  type Resolution = collection.mutable.Map[Proposition,List[Proposition]]
   var P : scala.collection.mutable.Map[String,Proposition] = scala.collection.mutable.Map()
   var C : List[Constraint] = List()
   var CG : scala.collection.mutable.Map[Proposition,List[Constraint]] = scala.collection.mutable.Map()
@@ -233,7 +238,7 @@ class CoherenceModel { self =>
   def subjectTo(c: List[Constraint]*) : CoherenceModel = {
     new CoherenceModel {
       P = self.P
-      C = self.C ++ c.flatten
+      C = self.C
       CG = self.CG
     }
   }
@@ -326,6 +331,62 @@ class CoherenceModel { self =>
       str = str + s"${p.id}: ${p.activation} \n"
 
     str
+  }
+
+  def generateResolution() : Resolution = {
+    var RM = collection.mutable.Map[Proposition,List[Proposition]]()
+    for (p <- P values) {
+      p match {
+        case p : Feature => {
+          if (p.activation > 0)
+            RM += (p -> List[Proposition]())
+        }
+        case _ =>
+      }
+    }
+    var m = RM.keys.map(_.id)
+    for (e <- C) {
+      e match {
+        case e : Facilitation => {
+          if ((m.exists (_ == e.action.id)) && (e.weight > 0)) {
+            e.goal match {
+              case x : Feature => RM (e.action) = x :: RM (e.action)
+              case _  =>
+            }
+          }
+        }
+        case _ =>
+      }
+    }
+    RM
+  }
+
+  def serialize(resModel: Resolution) : Array[String] = {
+    var featureList = List[String]()
+    object VColor extends Enumeration {
+      type VColor = Value
+      val WHITE, GRAY, BLACK = Value
+    }
+    import VColor._
+    var vertexColor = collection.mutable.Map[Proposition,VColor]()
+    for (k <- resModel keys) {
+      vertexColor += (k -> WHITE)
+    }
+
+    for (n <- resModel keys) {
+      if (vertexColor(n)==WHITE)
+        visit(n)
+    }
+
+    def visit(v: Proposition): Unit = {
+      vertexColor(v)=GRAY
+      for (n <- resModel(v)) {
+        if (vertexColor(n)==WHITE) visit(n)
+      }
+      vertexColor(v)=BLACK
+      featureList = v.id :: featureList
+    }
+    featureList.reverse.toArray
   }
 
 }

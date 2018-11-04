@@ -42,18 +42,12 @@ object FeatureSimMain extends App {
     )
 
   cm.evaluate()
-  println(cm)
+  println(cm)*/
 
 
 
-*/
 
-  /*var frame = new GraphVis()
-  frame.setDefaultCloseOperation(3)
-  frame.setSize(400,320)
-  frame.setVisible(true)*/
-
-  var cm = CoherenceModel {
+  var cm = FeatureCoherenceModel {
     context("spatial", "Context Information", 1.0)
     feature("base", "Base Model")
     feature("agentModel", "Prey-Predator")
@@ -72,11 +66,29 @@ object FeatureSimMain extends App {
     conflict("patchWithGrass", "patchWithNoGrass")
   ) evaluate()
 
+  var rm = cm.generateResolution()
+  println("Activated features and dependencies")
+  for (r <- rm keys) {
+    print(r.id + "---> ")
+    rm(r) foreach {x => print(x.id + " ")}
+    println()
+  }
 
+  println("Serialized feature list:")
+  var fs = cm.serialize(rm)
+
+  for (f <- fs) {
+    print(f + "  ")
+  }
+  println()
+
+
+
+/*
   var fg = new FeatureGraphVis(cm)
   fg.setDefaultCloseOperation(3)
   fg.setSize(800,800)
-  fg.setVisible(true)
+  fg.setVisible(true)*/
 
 
   var cmd : String = "ls -al"
@@ -90,14 +102,14 @@ object FeatureSimMain extends App {
   }
 
 
-
+/*
   var transformedModel = VariabilityModel
-    {
-      FeatureSpecifications("/Users/yilmaz/IdeaProjects/FeatureSim/" +
+  {
+    FeatureSpecifications("/Users/yilmaz/IdeaProjects/FeatureSim/" +
       "src/main/scala/metasim/SourceInput.scala")
-    }
-    {
-      FeatureTree(Base("base"), List(
+  }
+  {
+    FeatureTree(Base("base"), List(
       And("agentModel", List(
         Feature("preyModel"),
         Feature("predModel")
@@ -106,12 +118,40 @@ object FeatureSimMain extends App {
         Feature("patchWithGrass"),
         Feature("patchWithNoGrass"))
       )))
-    }
-    {
+  }
+  {
       ResolutionModel(scala.collection.mutable.Map[String, Boolean](
       "patchWithGrass" -> true,
       "patchWithNoGrass" -> false))
-    } compile("out.txt")
+  }
+*/
+
+  var transformedModel = VariabilityModel
+  {
+    FeatureSpecifications("/Users/yilmaz/IdeaProjects/FeatureSim/" +
+      "src/main/scala/metasim/SourceInput.scala")
+  }
+  {
+    FeatureCoherenceModel {
+      context("spatial", "Context Information", 1.0)
+      feature("base", "Base Model")
+      feature("agentModel", "Prey-Predator")
+      feature("preyModel", "Prey Protocol")
+      feature("predModel", "Predator Protocol")
+      feature("patchModel", "Environment")
+      feature("patchWithGrass","Environment with Grass")
+      feature("patchWithNoGrass", "Environment without Grass")
+    } subjectTo (
+      facilitate("agentModel","base",1.0),
+      facilitate("patchModel","base", 1.0),
+      facilitate( List("preyModel","predModel"), "agentModel",1.0),
+      facilitate("patchWithGrass","spatial", 1.0),
+      facilitate("patchWithGrass","patchModel"),
+      facilitate("patchWithNoGrass","patchModel"),
+      conflict("patchWithGrass", "patchWithNoGrass")
+    )
+  } compileCoherenceModel "out.txt"
+
 
   println(transformedModel)
 

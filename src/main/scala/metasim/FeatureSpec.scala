@@ -3,6 +3,8 @@ package metasim
 import scala.meta._
 import java.io._
 
+import coherence.CoherenceModel
+
 
 abstract class FeatureExpression {var fname: String}
 case class And(name:String, children: List[FeatureExpression]) extends FeatureExpression {var fname = name}
@@ -30,13 +32,11 @@ object FeatureSpecifications {
 abstract class VariabilityModel {
   var features : scala.meta.Source
   var featureTree : FeatureTree
+  var featureCoherenceGraph : CoherenceModel
   var resolution : ResolutionModel
-  def compile() : Defn.Object = {
-    val fs = FeatureTreeEvaluator(featureTree,resolution)
-    FeatureComposer(features,fs)
-  }
 
-  def compile(fileName: String): Defn.Object = {
+
+  def compileFeatureTree(fileName: String): Defn.Object = {
     val fs = FeatureTreeEvaluator(featureTree,resolution)
     var composite = FeatureComposer(features,fs)
     val writer = new PrintWriter(new File(fileName))
@@ -45,15 +45,47 @@ abstract class VariabilityModel {
     writer.close()
     composite
   }
+
+  def compile(fileName: String, fs: Array[String]) : Defn.Object = {
+    var composite = FeatureComposer(features,fs)
+    val writer = new PrintWriter(new File(fileName))
+
+    writer.write(composite.toString())
+    writer.close()
+    composite
+  }
+
+  def compileCoherenceModel(fileName: String): Defn.Object = {
+    var rmod = featureCoherenceGraph.evaluate().generateResolution()
+    val fs = featureCoherenceGraph.serialize(rmod)
+    var composite = FeatureComposer(features,fs)
+    val writer = new PrintWriter(new File(fileName))
+
+    writer.write(composite.toString())
+    writer.close()
+    composite
+  }
+
 }
 
+
 object VariabilityModel {
+ /*
   def apply(x: scala.meta.Source)(y: FeatureTree)(z: ResolutionModel): VariabilityModel = {
     new VariabilityModel {
       override var features: Source = x
       override var featureTree: FeatureTree = y
       override var resolution: ResolutionModel = z
+      override var featureCoherenceGraph: CoherenceModel = _
+    }
+  }*/
 
+  def apply(x: scala.meta.Source)(y: CoherenceModel) : VariabilityModel = {
+    new VariabilityModel {
+      override var features: Source = x
+      override var featureTree: FeatureTree = _
+      override var resolution: ResolutionModel = _
+      override var featureCoherenceGraph: CoherenceModel = y
     }
   }
 }

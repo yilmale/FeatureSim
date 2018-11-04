@@ -8,6 +8,7 @@ import com.mxgraph.view.mxGraph
 import com.mxgraph.layout.mxOrganicLayout
 import com.mxgraph.layout.mxGraphLayout
 import coherence._
+import com.mxgraph.layout.hierarchical.mxHierarchicalLayout
 import com.mxgraph.model.mxCell
 
 import scala.collection.mutable
@@ -72,7 +73,8 @@ class FeatureGraphVis(var cmod: CoherenceModel) extends
 
 
   def layoutGraph(): Unit = {
-    var layout = new mxOrganicLayout(graph)
+    //var layout = new mxOrganicLayout(graph)
+    var layout = new mxHierarchicalLayout(graph)
     var cell = graph.getDefaultParent()
     graph.getModel().beginUpdate()
     try {
