@@ -148,7 +148,8 @@ object FeatureSimMain extends App {
       facilitate("patchWithGrass","spatial", 1.0),
       facilitate("patchWithGrass","patchModel"),
       facilitate("patchWithNoGrass","patchModel"),
-      conflict("patchWithGrass", "patchWithNoGrass")
+      conflict("patchWithGrass", "patchWithNoGrass"),
+      conflict("patchWithNoGrass", "spatial")
     )
   } compileCoherenceModel "out.txt"
 
