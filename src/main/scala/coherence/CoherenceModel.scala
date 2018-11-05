@@ -216,7 +216,7 @@ object CoMod {
 
 }
 
-object FeatureCoherenceModel {
+object FeatureConstraintModel {
   def apply(block: => Unit): CoherenceModel = {
     new CoherenceModel {
       block

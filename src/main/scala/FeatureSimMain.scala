@@ -47,7 +47,7 @@ object FeatureSimMain extends App {
 
 
 /*
-  var cm = FeatureCoherenceModel {
+  var cm = FeatureConstraintModel {
     context("spatial", "Context Information", 1.0)
     feature("base", "Base Model")
     feature("agentModel", "Prey-Predator")
@@ -132,7 +132,7 @@ object FeatureSimMain extends App {
       "src/main/scala/metasim/SourceInput.scala")
   }
   {
-    FeatureCoherenceModel {
+    FeatureConstraintModel {
       context("spatial", "Context Information", 1.0)
       feature("base", "Base Model")
       feature("agentModel", "Prey-Predator")
