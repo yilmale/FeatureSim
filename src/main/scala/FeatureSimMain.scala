@@ -46,7 +46,7 @@ object FeatureSimMain extends App {
 
 
 
-
+/*
   var cm = FeatureCoherenceModel {
     context("spatial", "Context Information", 1.0)
     feature("base", "Base Model")
@@ -84,11 +84,11 @@ object FeatureSimMain extends App {
 
 
 
-/*
+
   var fg = new FeatureGraphVis(cm)
   fg.setDefaultCloseOperation(3)
   fg.setSize(800,800)
-  fg.setVisible(true)*/
+  fg.setVisible(true)
 
 
   var cmd : String = "ls -al"
@@ -100,7 +100,7 @@ object FeatureSimMain extends App {
     println(result)
   }
   }
-
+*/
 
 /*
   var transformedModel = VariabilityModel
