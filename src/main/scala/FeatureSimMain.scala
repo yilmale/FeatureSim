@@ -46,25 +46,26 @@ object FeatureSimMain extends App {
 
 
 
-/*
+
   var cm = FeatureConstraintModel {
-    context("spatial", "Context Information", 1.0)
-    feature("base", "Base Model")
-    feature("agentModel", "Prey-Predator")
-    feature("preyModel", "Prey Protocol")
-    feature("predModel", "Predator Protocol")
-    feature("patchModel", "Environment")
-    feature("patchWithGrass","Environment with Grass")
-    feature("patchWithNoGrass", "Environment without Grass")
-  } subjectTo (
-    facilitate("agentModel","base",1.0),
-    facilitate("patchModel","base", 1.0),
-    facilitate( List("preyModel","predModel"), "agentModel",1.0),
-    facilitate("patchWithGrass","spatial", 1.0),
-    facilitate("patchWithGrass","patchModel"),
-    facilitate("patchWithNoGrass","patchModel"),
-    conflict("patchWithGrass", "patchWithNoGrass")
-  ) evaluate()
+      context("spatial", "Context Information", 1.0)
+      feature("base", "Base Model")
+      feature("agentModel", "Prey-Predator")
+      feature("preyModel", "Prey Protocol")
+      feature("predModel", "Predator Protocol")
+      feature("patchModel", "Environment")
+      feature("patchWithGrass","Environment with Grass")
+      feature("patchWithNoGrass", "Environment without Grass")
+    } subjectTo (
+      facilitate("agentModel","base",1.0),
+      facilitate("patchModel","base", 1.0),
+      facilitate( List("preyModel","predModel"), "agentModel",1.0),
+      facilitate("patchWithGrass","spatial", 1.0),
+      facilitate("patchWithGrass","patchModel"),
+      facilitate("patchWithNoGrass","patchModel"),
+      conflict("patchWithGrass", "patchWithNoGrass"),
+      conflict("patchWithNoGrass", "spatial")
+    ) evaluate()
 
   var rm = cm.generateResolution()
   println("Activated features and dependencies")
@@ -90,7 +91,7 @@ object FeatureSimMain extends App {
   fg.setSize(800,800)
   fg.setVisible(true)
 
-
+/*
   var cmd : String = "ls -al"
   var result = (sys.process.Process(cmd) !!)
   println(result)
@@ -100,8 +101,8 @@ object FeatureSimMain extends App {
     println(result)
   }
   }
-*/
 
+*/
 /*
   var transformedModel = VariabilityModel
   {

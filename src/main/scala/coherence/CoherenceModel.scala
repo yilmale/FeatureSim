@@ -348,9 +348,10 @@ class CoherenceModel { self =>
     for (e <- C) {
       e match {
         case e : Facilitation => {
-          if ((m.exists (_ == e.action.id)) && (e.weight > 0)) {
+          if (m.exists(_ == e.action.id) && (e.weight > 0)) {
             e.goal match {
-              case x : Feature => RM (e.action) = x :: RM (e.action)
+              case x : Feature if (e.goal.activation > 0)
+                        => RM (e.action) = x :: RM (e.action)
               case _  =>
             }
           }
