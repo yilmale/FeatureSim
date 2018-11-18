@@ -87,7 +87,6 @@ object FeatureComposer {
     }
 
     var compositeStmts : List[Defn] = (refinedCls ::: baseTrs) ::: lftTrs
-
     var featureName = Term.Name(lifter.name.toString() + "_" + base.name.toString())
 
 

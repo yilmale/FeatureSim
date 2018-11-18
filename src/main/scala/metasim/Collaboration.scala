@@ -12,7 +12,19 @@ object Collaboration {
 
 
 
+object FeatureGenerator {
+  def apply(name: String)(body: => Unit): FeatureImplementation = {
+    new FeatureImplementation(name,body)
+  }
 
+}
+
+
+class FeatureImplementation (name: String, body: => Unit) {
+  def execute(): Unit = {
+    body
+  }
+}
 
 
 

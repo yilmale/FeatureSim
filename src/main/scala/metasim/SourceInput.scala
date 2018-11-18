@@ -1,3 +1,4 @@
+/*
 package metasim
 
 import org.nlogo.api.ScalaConversions._
@@ -353,3 +354,4 @@ object FeatureModel {
   }
 }
 
+*/

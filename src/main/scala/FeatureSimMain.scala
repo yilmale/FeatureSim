@@ -67,6 +67,8 @@ object FeatureSimMain extends App {
       conflict("patchWithNoGrass", "spatial")
     ) evaluate()
 
+
+
   var rm = cm.generateResolution()
   println("Activated features and dependencies")
   for (r <- rm keys) {
@@ -83,14 +85,16 @@ object FeatureSimMain extends App {
   }
   println()
 
+  FeatureGenerator("A")
+       {println("This is A")}
+    .execute()
 
-
-
+/*
   var fg = new FeatureGraphVis(cm)
   fg.setDefaultCloseOperation(3)
   fg.setSize(800,800)
   fg.setVisible(true)
-
+*/
 /*
   var cmd : String = "ls -al"
   var result = (sys.process.Process(cmd) !!)
@@ -126,7 +130,7 @@ object FeatureSimMain extends App {
       "patchWithNoGrass" -> false))
   }
 */
-
+/*
   var transformedModel = VariabilityModel
   {
     FeatureSpecifications("/Users/yilmaz/IdeaProjects/FeatureSim/" +
@@ -157,7 +161,7 @@ object FeatureSimMain extends App {
 
   println(transformedModel)
 
-
+*/
 
 
   //var i = new InferenceTest()

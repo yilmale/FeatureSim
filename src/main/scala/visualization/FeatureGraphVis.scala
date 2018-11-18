@@ -1,3 +1,5 @@
+/*
+
 package visualization
 
 import java.util
@@ -85,3 +87,5 @@ class FeatureGraphVis(var cmod: CoherenceModel) extends
     }
   }
 }
+
+*/
