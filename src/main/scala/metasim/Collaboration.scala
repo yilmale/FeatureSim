@@ -1,5 +1,7 @@
 package metasim
 
+import scala.meta._
+
 object Collaboration {
   def feature(name: String)(body: => Unit): Unit = {
     body
@@ -13,17 +15,15 @@ object Collaboration {
 
 
 object FeatureGenerator {
-  def apply(name: String)(body: => Unit): FeatureImplementation = {
-    new FeatureImplementation(name,body)
+  def apply(name: String)(featureSpec : Source = null, fileName: String = ""): FeatureImplementation = {
+    new FeatureImplementation(name,featureSpec,fileName)
   }
 
 }
 
 
-class FeatureImplementation (name: String, body: => Unit) {
-  def execute(): Unit = {
-    body
-  }
+class FeatureImplementation (name: String, body: Source, fileName: String) {
+      println(body)
 }
 
 

@@ -85,9 +85,20 @@ object FeatureSimMain extends App {
   }
   println()
 
-  FeatureGenerator("A")
-       {println("This is A")}
-    .execute()
+  FeatureGenerator("A")(
+    source"""
+      object PM {
+        feature("preyModel") {
+            trait MyPrey {
+                def move(): Unit
+                def reproduce(): Unit
+                def death(): Unit
+                def consume(e: Double): Unit
+            }
+        }
+       }
+           """
+  )
 
 /*
   var fg = new FeatureGraphVis(cm)
