@@ -131,7 +131,9 @@ object FeatureSimMain extends App {
 
   var vmod = VariabilityModel
   {
-    FeatureSpecifications("/Users/yilmaz/IdeaProjects/FeatureSim/src/main/scala/SourceInput.txt")
+    FeatureSpecifications {
+      "/Users/yilmaz/IdeaProjects/FeatureSim/src/main/scala/SourceInput.txt"
+    }
   }
   {
     FeatureConstraintModel {
