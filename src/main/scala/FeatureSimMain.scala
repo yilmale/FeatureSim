@@ -122,7 +122,7 @@ object FeatureSimMain extends App {
   var transformedModel = VariabilityModel
   {
     FeatureSpecifications("/Users/yilmaz/IdeaProjects/FeatureSim/" +
-      "src/main/scala/metasim/SourceInput.scala")
+      "src/main/scala/metasim/SourceInput.txt")
   }
   {
     FeatureTree(Base("base"), List(
@@ -141,11 +141,10 @@ object FeatureSimMain extends App {
       "patchWithNoGrass" -> false))
   }
 */
-/*
+
   var transformedModel = VariabilityModel
   {
-    FeatureSpecifications("/Users/yilmaz/IdeaProjects/FeatureSim/" +
-      "src/main/scala/metasim/SourceInput.scala")
+    FeatureSpecifications("C:\\Users\\yilma\\IdeaProjects\\FeatureSim\\src\\main\\scala\\SourceInput.txt")
   }
   {
     FeatureConstraintModel {
@@ -172,7 +171,7 @@ object FeatureSimMain extends App {
 
   println(transformedModel)
 
-*/
+
 
 
   //var i = new InferenceTest()

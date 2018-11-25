@@ -8,6 +8,7 @@ object FeatureComposer {
   var featureMapper = scala.collection.mutable.Map[String,List[Defn]]()
   val pattern = "([A-Za-z0-9]*)_([A-Za-z0-9]+)".r
   val pattern1 = "([A-Za-z0-9(]+)\"([A-Za-z0-9]+)\"([)])".r
+  var initialized : Boolean = false
 
   def lift(lifter: Defn.Object, base: Defn.Object): Defn.Object = {
     def liftClass(s : Defn.Class, t: Defn.Trait): Defn.Class = {

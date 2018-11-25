@@ -3,8 +3,10 @@ package metasim
 import scala.meta._
 import java.io._
 
-
 import coherence.CoherenceModel
+import FeatureComposer._
+
+import scala.collection.mutable
 
 
 abstract class FeatureExpression {var fname: String}
@@ -35,6 +37,7 @@ abstract class VariabilityModel {
   var featureTree : FeatureTree
   var featureCoherenceGraph : CoherenceModel
   var resolution : ResolutionModel
+  var featureModules : scala.collection.mutable.Map[String,Defn.Object]
 
 
   def compileFeatureTree(fileName: String): Defn.Object = {
@@ -56,6 +59,16 @@ abstract class VariabilityModel {
     composite
   }
 
+  def compileFeatures(): Unit = {
+    var fts = transform(features)
+    fts foreach { f =>
+      {
+        featureModules += (f.name.toString -> f)
+      }
+
+    }
+  }
+
   def compileCoherenceModel(fileName: String): Defn.Object = {
     var rmod = featureCoherenceGraph.evaluate().generateResolution()
     val fs = featureCoherenceGraph.serialize(rmod)
@@ -71,15 +84,16 @@ abstract class VariabilityModel {
 
 
 object VariabilityModel {
- /*
-  def apply(x: scala.meta.Source)(y: FeatureTree)(z: ResolutionModel): VariabilityModel = {
-    new VariabilityModel {
-      override var features: Source = x
-      override var featureTree: FeatureTree = y
-      override var resolution: ResolutionModel = z
-      override var featureCoherenceGraph: CoherenceModel = _
-    }
-  }*/
+
+  /*
+   def apply(x: scala.meta.Source)(y: FeatureTree)(z: ResolutionModel): VariabilityModel = {
+     new VariabilityModel {
+       override var features: Source = x
+       override var featureTree: FeatureTree = y
+       override var resolution: ResolutionModel = z
+       override var featureCoherenceGraph: CoherenceModel = _
+     }
+   }*/
 
   def apply(x: scala.meta.Source)(y: CoherenceModel) : VariabilityModel = {
     new VariabilityModel {
@@ -87,8 +101,10 @@ object VariabilityModel {
       override var featureTree: FeatureTree = _
       override var resolution: ResolutionModel = _
       override var featureCoherenceGraph: CoherenceModel = y
+      override var featureModules = mutable.Map[String, Defn.Object]()
     }
   }
+
 }
 
 object FeatureTreeEvaluator {
