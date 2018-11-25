@@ -98,57 +98,47 @@ object FeatureComposer {
      """
   }
 
-  def initialize(objs: List[Defn.Object]): Unit = {
-    def initializeFeature(defns: List[Defn], featureName: Term.Name): Unit = {
-      defns foreach { d =>
-      {
-        d match {
-          case c : Defn.Class => {
-            var cStats = c.templ.stats
-            var cName = Type.Name(featureName.toString()+"_"+c.name.toString)
-            featureMapper(featureName.toString()) =
-              q"""class $cName {
+
+  def initializeFeature(o: Defn.Object): Unit = {
+    featureMapper += (o.name.toString() -> List[Defn]())
+    var dfns = List[Defn]()
+    o.templ.stats foreach {
+      case c: Defn.Class => dfns = c :: dfns
+      case t: Defn.Trait => dfns = t :: dfns
+      case _ =>
+    }
+    val featureName = o.name
+    dfns foreach { d =>
+    {
+      d match {
+        case c : Defn.Class => {
+          var cStats = c.templ.stats
+          var cName = Type.Name(featureName.toString()+"_"+c.name.toString)
+          featureMapper(featureName.toString()) =
+            q"""class $cName {
                  ..$cStats
                 }
                 """ :: featureMapper(featureName.toString())
 
-          }
-          case t : Defn.Trait => {
-            var tStats = t.templ.stats
-            var tName = Type.Name(featureName + "_"+ t.name.toString)
-            featureMapper(featureName.toString()) =
-              q"""trait $tName {
+        }
+        case t : Defn.Trait => {
+          var tStats = t.templ.stats
+          var tName = Type.Name(featureName + "_"+ t.name.toString)
+          featureMapper(featureName.toString()) =
+            q"""trait $tName {
                  ..$tStats
                 }
                 """ :: featureMapper(featureName.toString())
-          }
         }
       }
-      }
-
+    }
     }
 
+  }
+
+  def initialize(objs: List[Defn.Object]): Unit = {
     featureMapper += ("FeatureModel" -> List(q"class Base_FeatureModel {}"))
-    objs foreach {o =>
-    {
-      featureMapper += (o.name.toString() -> List[Defn]())
-
-      var dfns = List[Defn]()
-      o.templ.stats foreach {
-        case c: Defn.Class => dfns = c :: dfns
-        case t: Defn.Trait => dfns = t :: dfns
-        case _ =>
-      }
-
-      /*var cls : List[Defn] = o collect {
-        case cl: Defn.Class => cl
-        case tr : Defn.Trait => tr
-      }*/
-
-
-      initializeFeature(dfns,o.name)
-    }
-    }
+    objs foreach {o => initializeFeature(o)}
   }
 
   def transform(f: Source): List[Defn.Object] = {
@@ -234,8 +224,5 @@ object FeatureComposer {
     initialize(transform(f))
     reduce(merge(fspec))
   }
-
-
-
 
 }

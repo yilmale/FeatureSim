@@ -85,20 +85,7 @@ object FeatureSimMain extends App {
   }
   println()
 
-  FeatureGenerator("A")(
-    source"""
-      object PM {
-        feature("preyModel") {
-            trait MyPrey {
-                def move(): Unit
-                def reproduce(): Unit
-                def death(): Unit
-                def consume(e: Double): Unit
-            }
-        }
-       }
-           """
-  )
+
 
 /*
   var fg = new FeatureGraphVis(cm)
@@ -142,9 +129,9 @@ object FeatureSimMain extends App {
   }
 */
 
-  var transformedModel = VariabilityModel
+  var vmod = VariabilityModel
   {
-    FeatureSpecifications("C:\\Users\\yilma\\IdeaProjects\\FeatureSim\\src\\main\\scala\\SourceInput.txt")
+    FeatureSpecifications("/Users/yilmaz/IdeaProjects/FeatureSim/src/main/scala/SourceInput.txt")
   }
   {
     FeatureConstraintModel {
@@ -166,10 +153,42 @@ object FeatureSimMain extends App {
       conflict("patchWithGrass", "patchWithNoGrass"),
       conflict("patchWithNoGrass", "spatial")
     )
-  } compileCoherenceModel "out.txt"
+  } //compileCoherenceModel "out.txt"
 
 
-  println(transformedModel)
+  println("----------------------------------------")
+
+  vmod.compileFeatures() foreach {f => {
+    println("Feature Name: " + f._1)
+    println("Feature Source: " + f._2)
+    println("--------------------------------------")
+  }}
+
+
+  vmod.addFeature(FeatureGenerator("XXX")(
+      featureSpec = source"""
+         object PM {
+           feature("XXX") {
+              trait MyPrey {
+                def move(): Unit
+                def reproduce(): Unit
+                def death(): Unit
+                def consume(e: Double): Unit
+            }
+        }
+       }
+           """
+    ))
+
+    println("----------------------------------------")
+    println("----------------------------------------")
+
+    vmod.featureModules foreach {f => {
+      println("Feature Name: " + f._1)
+      println("Feature Source: " + f._2)
+      println("--------------------------------------")
+    }}
+
 
 
 

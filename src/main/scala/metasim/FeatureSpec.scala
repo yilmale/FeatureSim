@@ -33,11 +33,12 @@ object FeatureSpecifications {
 
 
 abstract class VariabilityModel {
+  type Features = scala.collection.mutable.Map[String,Defn.Object]
   var features : scala.meta.Source
   var featureTree : FeatureTree
   var featureCoherenceGraph : CoherenceModel
   var resolution : ResolutionModel
-  var featureModules : scala.collection.mutable.Map[String,Defn.Object]
+  var featureModules : Features
 
 
   def compileFeatureTree(fileName: String): Defn.Object = {
@@ -59,7 +60,7 @@ abstract class VariabilityModel {
     composite
   }
 
-  def compileFeatures(): Unit = {
+  def compileFeatures(): Features = {
     var fts = transform(features)
     fts foreach { f =>
       {
@@ -67,6 +68,16 @@ abstract class VariabilityModel {
       }
 
     }
+    featureModules
+  }
+
+  def addFeature(f: FeatureImplementation): Unit = {
+    var fobjs = transform(f.body)
+    fobjs foreach { x => {
+      featureModules += (x.name.toString -> x)
+      initializeFeature(x)
+
+    }}
   }
 
   def compileCoherenceModel(fileName: String): Defn.Object = {

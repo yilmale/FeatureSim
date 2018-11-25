@@ -22,8 +22,8 @@ object FeatureGenerator {
 }
 
 
-class FeatureImplementation (name: String, body: Source, fileName: String) {
-      println(body)
+class FeatureImplementation(var name: String, var body: Source, var fileName: String) {
+
 }
 
 
