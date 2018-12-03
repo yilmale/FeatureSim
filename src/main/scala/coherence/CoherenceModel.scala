@@ -243,6 +243,14 @@ class CoherenceModel { self =>
     }
   }
 
+  def getActiveNodes(threshold : Double) : List[Proposition] = {
+    var activated =List[Proposition]()
+    for (p <- P values) {
+      if (p.activation >= threshold) activated = p :: activated
+    }
+    activated
+  }
+
   def evaluate(): CoherenceModel = {
     var activations= scala.collection.mutable.Map[Proposition,Double]()
     var netFlow = scala.collection.mutable.Map[Proposition,Double]()

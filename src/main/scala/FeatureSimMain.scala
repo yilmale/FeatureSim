@@ -17,6 +17,9 @@ import sys.process._
 
 import visualization._
 
+import learning.xcs._
+import learning.xcs.XCSAlgorithm.model
+
 
 
 
@@ -43,6 +46,13 @@ object FeatureSimMain extends App {
 
   cm.evaluate()
   println(cm)*/
+
+  var s = new MUXProblem(10000)
+  XCSAlgorithm(s)
+
+  println("Final population in sorted order of fitness")
+  var rules = model.sort()
+  rules foreach (r => print(r))
 
 
 
@@ -190,6 +200,11 @@ object FeatureSimMain extends App {
       println("Feature Source: " + f._2)
       println("--------------------------------------")
     }}
+
+    vmod.featureCoherenceGraph.evaluate()
+    var L = vmod.featureCoherenceGraph.getActiveNodes(0.1)
+    println("Activated nodes are ")
+    for (p <- L) println(p.id)
 
 
 
